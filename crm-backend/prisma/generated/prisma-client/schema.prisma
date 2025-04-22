@@ -129,14 +129,20 @@ model Deal {
 }
 
 model Activity {
-  id          String   @id @default(uuid())
-  title       String
-  type        String // task | call | meeting
-  status      String // ожидается | выполнено | отменено
-  description String?
-  date        DateTime
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String
+  id             String    @id @default(uuid())
+  title          String
+  type           String // task | call | meeting
+  status         String // ожидается | выполнено | отменено
+  description    String?
+  date           DateTime
+  owner          User      @relation(fields: [ownerId], references: [id])
+  ownerId        String
+  repeat         Boolean   @default(false)
+  repeatPattern  String? // daily | weekly | monthly
+  repeatInterval Int? // например, каждые 2 дня / 1 неделя и т.д.
+  repeatUntil    DateTime? // когда прекратить повторение
+  remindAt       DateTime? // точное время для напоминания
+  remindType     String? // once | daily | weekly и т.п. (на будущее)
 
   account   Account? @relation(fields: [accountId], references: [id])
   accountId String?

@@ -11410,8 +11410,18 @@ export namespace Prisma {
 
   export type AggregateActivity = {
     _count: ActivityCountAggregateOutputType | null
+    _avg: ActivityAvgAggregateOutputType | null
+    _sum: ActivitySumAggregateOutputType | null
     _min: ActivityMinAggregateOutputType | null
     _max: ActivityMaxAggregateOutputType | null
+  }
+
+  export type ActivityAvgAggregateOutputType = {
+    repeatInterval: number | null
+  }
+
+  export type ActivitySumAggregateOutputType = {
+    repeatInterval: number | null
   }
 
   export type ActivityMinAggregateOutputType = {
@@ -11422,6 +11432,12 @@ export namespace Prisma {
     description: string | null
     date: Date | null
     ownerId: string | null
+    repeat: boolean | null
+    repeatPattern: string | null
+    repeatInterval: number | null
+    repeatUntil: Date | null
+    remindAt: Date | null
+    remindType: string | null
     accountId: string | null
     contactId: string | null
     dealId: string | null
@@ -11437,6 +11453,12 @@ export namespace Prisma {
     description: string | null
     date: Date | null
     ownerId: string | null
+    repeat: boolean | null
+    repeatPattern: string | null
+    repeatInterval: number | null
+    repeatUntil: Date | null
+    remindAt: Date | null
+    remindType: string | null
     accountId: string | null
     contactId: string | null
     dealId: string | null
@@ -11452,6 +11474,12 @@ export namespace Prisma {
     description: number
     date: number
     ownerId: number
+    repeat: number
+    repeatPattern: number
+    repeatInterval: number
+    repeatUntil: number
+    remindAt: number
+    remindType: number
     accountId: number
     contactId: number
     dealId: number
@@ -11461,6 +11489,14 @@ export namespace Prisma {
   }
 
 
+  export type ActivityAvgAggregateInputType = {
+    repeatInterval?: true
+  }
+
+  export type ActivitySumAggregateInputType = {
+    repeatInterval?: true
+  }
+
   export type ActivityMinAggregateInputType = {
     id?: true
     title?: true
@@ -11469,6 +11505,12 @@ export namespace Prisma {
     description?: true
     date?: true
     ownerId?: true
+    repeat?: true
+    repeatPattern?: true
+    repeatInterval?: true
+    repeatUntil?: true
+    remindAt?: true
+    remindType?: true
     accountId?: true
     contactId?: true
     dealId?: true
@@ -11484,6 +11526,12 @@ export namespace Prisma {
     description?: true
     date?: true
     ownerId?: true
+    repeat?: true
+    repeatPattern?: true
+    repeatInterval?: true
+    repeatUntil?: true
+    remindAt?: true
+    remindType?: true
     accountId?: true
     contactId?: true
     dealId?: true
@@ -11499,6 +11547,12 @@ export namespace Prisma {
     description?: true
     date?: true
     ownerId?: true
+    repeat?: true
+    repeatPattern?: true
+    repeatInterval?: true
+    repeatUntil?: true
+    remindAt?: true
+    remindType?: true
     accountId?: true
     contactId?: true
     dealId?: true
@@ -11545,6 +11599,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ActivityAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ActivitySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ActivityMinAggregateInputType
@@ -11575,6 +11641,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ActivityCountAggregateInputType | true
+    _avg?: ActivityAvgAggregateInputType
+    _sum?: ActivitySumAggregateInputType
     _min?: ActivityMinAggregateInputType
     _max?: ActivityMaxAggregateInputType
   }
@@ -11587,12 +11655,20 @@ export namespace Prisma {
     description: string | null
     date: Date
     ownerId: string
+    repeat: boolean
+    repeatPattern: string | null
+    repeatInterval: number | null
+    repeatUntil: Date | null
+    remindAt: Date | null
+    remindType: string | null
     accountId: string | null
     contactId: string | null
     dealId: string | null
     parentId: string | null
     createdAt: Date
     _count: ActivityCountAggregateOutputType | null
+    _avg: ActivityAvgAggregateOutputType | null
+    _sum: ActivitySumAggregateOutputType | null
     _min: ActivityMinAggregateOutputType | null
     _max: ActivityMaxAggregateOutputType | null
   }
@@ -11619,6 +11695,12 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     ownerId?: boolean
+    repeat?: boolean
+    repeatPattern?: boolean
+    repeatInterval?: boolean
+    repeatUntil?: boolean
+    remindAt?: boolean
+    remindType?: boolean
     accountId?: boolean
     contactId?: boolean
     dealId?: boolean
@@ -11642,6 +11724,12 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     ownerId?: boolean
+    repeat?: boolean
+    repeatPattern?: boolean
+    repeatInterval?: boolean
+    repeatUntil?: boolean
+    remindAt?: boolean
+    remindType?: boolean
     accountId?: boolean
     contactId?: boolean
     dealId?: boolean
@@ -11662,6 +11750,12 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     ownerId?: boolean
+    repeat?: boolean
+    repeatPattern?: boolean
+    repeatInterval?: boolean
+    repeatUntil?: boolean
+    remindAt?: boolean
+    remindType?: boolean
     accountId?: boolean
     contactId?: boolean
     dealId?: boolean
@@ -11682,6 +11776,12 @@ export namespace Prisma {
     description?: boolean
     date?: boolean
     ownerId?: boolean
+    repeat?: boolean
+    repeatPattern?: boolean
+    repeatInterval?: boolean
+    repeatUntil?: boolean
+    remindAt?: boolean
+    remindType?: boolean
     accountId?: boolean
     contactId?: boolean
     dealId?: boolean
@@ -11689,7 +11789,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type ActivityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "type" | "status" | "description" | "date" | "ownerId" | "accountId" | "contactId" | "dealId" | "parentId" | "createdAt", ExtArgs["result"]["activity"]>
+  export type ActivityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "type" | "status" | "description" | "date" | "ownerId" | "repeat" | "repeatPattern" | "repeatInterval" | "repeatUntil" | "remindAt" | "remindType" | "accountId" | "contactId" | "dealId" | "parentId" | "createdAt", ExtArgs["result"]["activity"]>
   export type ActivityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     account?: boolean | Activity$accountArgs<ExtArgs>
@@ -11734,6 +11834,12 @@ export namespace Prisma {
       description: string | null
       date: Date
       ownerId: string
+      repeat: boolean
+      repeatPattern: string | null
+      repeatInterval: number | null
+      repeatUntil: Date | null
+      remindAt: Date | null
+      remindType: string | null
       accountId: string | null
       contactId: string | null
       dealId: string | null
@@ -12176,6 +12282,12 @@ export namespace Prisma {
     readonly description: FieldRef<"Activity", 'String'>
     readonly date: FieldRef<"Activity", 'DateTime'>
     readonly ownerId: FieldRef<"Activity", 'String'>
+    readonly repeat: FieldRef<"Activity", 'Boolean'>
+    readonly repeatPattern: FieldRef<"Activity", 'String'>
+    readonly repeatInterval: FieldRef<"Activity", 'Int'>
+    readonly repeatUntil: FieldRef<"Activity", 'DateTime'>
+    readonly remindAt: FieldRef<"Activity", 'DateTime'>
+    readonly remindType: FieldRef<"Activity", 'String'>
     readonly accountId: FieldRef<"Activity", 'String'>
     readonly contactId: FieldRef<"Activity", 'String'>
     readonly dealId: FieldRef<"Activity", 'String'>
@@ -36793,6 +36905,12 @@ export namespace Prisma {
     description: 'description',
     date: 'date',
     ownerId: 'ownerId',
+    repeat: 'repeat',
+    repeatPattern: 'repeatPattern',
+    repeatInterval: 'repeatInterval',
+    repeatUntil: 'repeatUntil',
+    remindAt: 'remindAt',
+    remindType: 'remindType',
     accountId: 'accountId',
     contactId: 'contactId',
     dealId: 'dealId',
@@ -37707,6 +37825,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"Activity"> | string | null
     date?: DateTimeFilter<"Activity"> | Date | string
     ownerId?: StringFilter<"Activity"> | string
+    repeat?: BoolFilter<"Activity"> | boolean
+    repeatPattern?: StringNullableFilter<"Activity"> | string | null
+    repeatInterval?: IntNullableFilter<"Activity"> | number | null
+    repeatUntil?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindAt?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindType?: StringNullableFilter<"Activity"> | string | null
     accountId?: StringNullableFilter<"Activity"> | string | null
     contactId?: StringNullableFilter<"Activity"> | string | null
     dealId?: StringNullableFilter<"Activity"> | string | null
@@ -37729,6 +37853,12 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     date?: SortOrder
     ownerId?: SortOrder
+    repeat?: SortOrder
+    repeatPattern?: SortOrderInput | SortOrder
+    repeatInterval?: SortOrderInput | SortOrder
+    repeatUntil?: SortOrderInput | SortOrder
+    remindAt?: SortOrderInput | SortOrder
+    remindType?: SortOrderInput | SortOrder
     accountId?: SortOrderInput | SortOrder
     contactId?: SortOrderInput | SortOrder
     dealId?: SortOrderInput | SortOrder
@@ -37754,6 +37884,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"Activity"> | string | null
     date?: DateTimeFilter<"Activity"> | Date | string
     ownerId?: StringFilter<"Activity"> | string
+    repeat?: BoolFilter<"Activity"> | boolean
+    repeatPattern?: StringNullableFilter<"Activity"> | string | null
+    repeatInterval?: IntNullableFilter<"Activity"> | number | null
+    repeatUntil?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindAt?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindType?: StringNullableFilter<"Activity"> | string | null
     accountId?: StringNullableFilter<"Activity"> | string | null
     contactId?: StringNullableFilter<"Activity"> | string | null
     dealId?: StringNullableFilter<"Activity"> | string | null
@@ -37776,14 +37912,22 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     date?: SortOrder
     ownerId?: SortOrder
+    repeat?: SortOrder
+    repeatPattern?: SortOrderInput | SortOrder
+    repeatInterval?: SortOrderInput | SortOrder
+    repeatUntil?: SortOrderInput | SortOrder
+    remindAt?: SortOrderInput | SortOrder
+    remindType?: SortOrderInput | SortOrder
     accountId?: SortOrderInput | SortOrder
     contactId?: SortOrderInput | SortOrder
     dealId?: SortOrderInput | SortOrder
     parentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: ActivityCountOrderByAggregateInput
+    _avg?: ActivityAvgOrderByAggregateInput
     _max?: ActivityMaxOrderByAggregateInput
     _min?: ActivityMinOrderByAggregateInput
+    _sum?: ActivitySumOrderByAggregateInput
   }
 
   export type ActivityScalarWhereWithAggregatesInput = {
@@ -37797,6 +37941,12 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Activity"> | string | null
     date?: DateTimeWithAggregatesFilter<"Activity"> | Date | string
     ownerId?: StringWithAggregatesFilter<"Activity"> | string
+    repeat?: BoolWithAggregatesFilter<"Activity"> | boolean
+    repeatPattern?: StringNullableWithAggregatesFilter<"Activity"> | string | null
+    repeatInterval?: IntNullableWithAggregatesFilter<"Activity"> | number | null
+    repeatUntil?: DateTimeNullableWithAggregatesFilter<"Activity"> | Date | string | null
+    remindAt?: DateTimeNullableWithAggregatesFilter<"Activity"> | Date | string | null
+    remindType?: StringNullableWithAggregatesFilter<"Activity"> | string | null
     accountId?: StringNullableWithAggregatesFilter<"Activity"> | string | null
     contactId?: StringNullableWithAggregatesFilter<"Activity"> | string | null
     dealId?: StringNullableWithAggregatesFilter<"Activity"> | string | null
@@ -39788,6 +39938,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -39806,6 +39962,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -39822,6 +39984,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -39840,6 +40008,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39857,6 +40031,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -39871,6 +40051,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -39882,6 +40068,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42016,6 +42208,28 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type DealNullableScalarRelationFilter = {
     is?: DealWhereInput | null
     isNot?: DealWhereInput | null
@@ -42044,11 +42258,21 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     ownerId?: SortOrder
+    repeat?: SortOrder
+    repeatPattern?: SortOrder
+    repeatInterval?: SortOrder
+    repeatUntil?: SortOrder
+    remindAt?: SortOrder
+    remindType?: SortOrder
     accountId?: SortOrder
     contactId?: SortOrder
     dealId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ActivityAvgOrderByAggregateInput = {
+    repeatInterval?: SortOrder
   }
 
   export type ActivityMaxOrderByAggregateInput = {
@@ -42059,6 +42283,12 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     ownerId?: SortOrder
+    repeat?: SortOrder
+    repeatPattern?: SortOrder
+    repeatInterval?: SortOrder
+    repeatUntil?: SortOrder
+    remindAt?: SortOrder
+    remindType?: SortOrder
     accountId?: SortOrder
     contactId?: SortOrder
     dealId?: SortOrder
@@ -42074,11 +42304,51 @@ export namespace Prisma {
     description?: SortOrder
     date?: SortOrder
     ownerId?: SortOrder
+    repeat?: SortOrder
+    repeatPattern?: SortOrder
+    repeatInterval?: SortOrder
+    repeatUntil?: SortOrder
+    remindAt?: SortOrder
+    remindType?: SortOrder
     accountId?: SortOrder
     contactId?: SortOrder
     dealId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ActivitySumOrderByAggregateInput = {
+    repeatInterval?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type EmailAccountCountOrderByAggregateInput = {
@@ -42416,17 +42686,6 @@ export namespace Prisma {
     dealId?: SortOrder
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type FileFolderNullableScalarRelationFilter = {
     is?: FileFolderWhereInput | null
     isNot?: FileFolderWhereInput | null
@@ -42497,20 +42756,6 @@ export namespace Prisma {
 
   export type FileSumOrderByAggregateInput = {
     size?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type SettingOptionCountOrderByAggregateInput = {
@@ -44295,6 +44540,18 @@ export namespace Prisma {
     connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type UserUpdateOneRequiredWithoutActivityNestedInput = {
     create?: XOR<UserCreateWithoutActivityInput, UserUncheckedCreateWithoutActivityInput>
     connectOrCreate?: UserCreateOrConnectWithoutActivityInput
@@ -44681,10 +44938,6 @@ export namespace Prisma {
     create?: XOR<CommentCreateWithoutFilesInput, CommentUncheckedCreateWithoutFilesInput>
     connectOrCreate?: CommentCreateOrConnectWithoutFilesInput
     connect?: CommentWhereUniqueInput
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type UserUpdateOneRequiredWithoutFileNestedInput = {
@@ -45220,6 +45473,58 @@ export namespace Prisma {
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
   }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -45242,31 +45547,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -45443,6 +45723,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     account?: AccountCreateNestedOneWithoutActivityInput
     contact?: ContactCreateNestedOneWithoutActivityInput
@@ -45459,6 +45745,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -46045,6 +46337,12 @@ export namespace Prisma {
     description?: StringNullableFilter<"Activity"> | string | null
     date?: DateTimeFilter<"Activity"> | Date | string
     ownerId?: StringFilter<"Activity"> | string
+    repeat?: BoolFilter<"Activity"> | boolean
+    repeatPattern?: StringNullableFilter<"Activity"> | string | null
+    repeatInterval?: IntNullableFilter<"Activity"> | number | null
+    repeatUntil?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindAt?: DateTimeNullableFilter<"Activity"> | Date | string | null
+    remindType?: StringNullableFilter<"Activity"> | string | null
     accountId?: StringNullableFilter<"Activity"> | string | null
     contactId?: StringNullableFilter<"Activity"> | string | null
     dealId?: StringNullableFilter<"Activity"> | string | null
@@ -46768,6 +47066,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     contact?: ContactCreateNestedOneWithoutActivityInput
@@ -46785,6 +47089,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     contactId?: string | null
     dealId?: string | null
     parentId?: string | null
@@ -47057,6 +47367,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -47074,6 +47390,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     dealId?: string | null
     parentId?: string | null
@@ -47406,6 +47728,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -47423,6 +47751,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     parentId?: string | null
@@ -47811,6 +48145,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -47828,6 +48168,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -47848,6 +48194,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -47865,6 +48217,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -48108,6 +48466,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -48125,6 +48489,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49988,6 +50358,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     createdAt?: Date | string
     owner: UserCreateNestedOneWithoutActivityInput
     account?: AccountCreateNestedOneWithoutActivityInput
@@ -50005,6 +50381,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -50793,6 +51175,12 @@ export namespace Prisma {
     status: string
     description?: string | null
     date: Date | string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -51058,6 +51446,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     account?: AccountUpdateOneWithoutActivityNestedInput
     contact?: ContactUpdateOneWithoutActivityNestedInput
@@ -51074,6 +51468,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51090,6 +51490,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51691,6 +52097,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     contactId?: string | null
     dealId?: string | null
     parentId?: string | null
@@ -51783,6 +52195,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     contact?: ContactUpdateOneWithoutActivityNestedInput
@@ -51800,6 +52218,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51816,6 +52240,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51842,6 +52272,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     dealId?: string | null
     parentId?: string | null
@@ -51899,6 +52335,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -51916,6 +52358,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51932,6 +52380,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51958,6 +52412,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     parentId?: string | null
@@ -51975,6 +52435,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -51992,6 +52458,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52008,6 +52480,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52034,6 +52512,12 @@ export namespace Prisma {
     description?: string | null
     date: Date | string
     ownerId: string
+    repeat?: boolean
+    repeatPattern?: string | null
+    repeatInterval?: number | null
+    repeatUntil?: Date | string | null
+    remindAt?: Date | string | null
+    remindType?: string | null
     accountId?: string | null
     contactId?: string | null
     dealId?: string | null
@@ -52047,6 +52531,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -52064,6 +52554,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52080,6 +52576,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52294,6 +52796,12 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutActivityNestedInput
     account?: AccountUpdateOneWithoutActivityNestedInput
@@ -52311,6 +52819,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52327,6 +52841,12 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    repeat?: BoolFieldUpdateOperationsInput | boolean
+    repeatPattern?: NullableStringFieldUpdateOperationsInput | string | null
+    repeatInterval?: NullableIntFieldUpdateOperationsInput | number | null
+    repeatUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    remindType?: NullableStringFieldUpdateOperationsInput | string | null
     accountId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     dealId?: NullableStringFieldUpdateOperationsInput | string | null

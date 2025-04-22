@@ -28,12 +28,28 @@ export class ActivitiesService {
     parentId?: string;
     tagIds?: string[];
     customFields?: Record<string, any>;
+    repeat?: boolean;
+    repeatPattern?: string;
+    repeatUntil?: Date;
+    remindAt?: Date; // ✅ добавлено
   }) {
-    const { customFields, tagIds = [], ...activityData } = data;
+    const {
+      customFields,
+      tagIds = [],
+      repeat = false,
+      repeatPattern,
+      repeatUntil,
+      remindAt,
+      ...activityData
+    } = data;
 
     const activity = await this.prisma.activity.create({
       data: {
         ...activityData,
+        repeat,
+        repeatPattern,
+        repeatUntil,
+        remindAt, // ✅ сохраняем
         tags: {
           connect: tagIds.map((id) => ({ id })),
         },
@@ -106,9 +122,21 @@ export class ActivitiesService {
       parentId?: string;
       tagIds?: string[];
       customFields?: Record<string, any>;
+      repeat?: boolean;
+      repeatPattern?: string;
+      repeatUntil?: Date;
+      remindAt?: Date; // ✅ добавлено
     }>,
   ) {
-    const { customFields, tagIds, ...activityData } = data;
+    const {
+      customFields,
+      tagIds,
+      repeat,
+      repeatPattern,
+      repeatUntil,
+      remindAt,
+      ...activityData
+    } = data;
 
     const old = await this.prisma.activity.findUnique({ where: { id } });
     if (!old) throw new NotFoundException('Активность не найдена');
@@ -124,6 +152,10 @@ export class ActivitiesService {
           where: { id },
           data: {
             ...activityData,
+            ...(repeat !== undefined && { repeat }),
+            ...(repeatPattern !== undefined && { repeatPattern }),
+            ...(repeatUntil !== undefined && { repeatUntil }),
+            ...(remindAt !== undefined && { remindAt }), // ✅ сохраняем
             ...(tagIds && {
               tags: {
                 set: tagIds.map((id) => ({ id })),
