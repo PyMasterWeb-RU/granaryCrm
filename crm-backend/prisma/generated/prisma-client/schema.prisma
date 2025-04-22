@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String   @id @default(uuid())
+  email                String   @unique
+  password             String
+  name                 String
+  telegramId           String? // ID пользователя Telegram
+  notificationsEnabled Boolean  @default(true)
+  role                 Role     @relation(fields: [roleId], references: [id])
+  roleId               String
+  createdAt            DateTime @default(now())
+
+  team   Team?   @relation(fields: [teamId], references: [id])
+  teamId String?
+
+  Account Account[]
+
+  Contact Contact[]
+
+  Deal Deal[]
+
+  Activity Activity[]
+
+  EmailAccount EmailAccount[]
+
+  EmailTemplate EmailTemplate[]
+
+  EmailMessage EmailMessage[]
+
+  EmailInboxMessage EmailInboxMessage[]
+
+  EmailContact EmailContact[]
+
+  DocumentTemplate DocumentTemplate[]
+
+  GeneratedDocument GeneratedDocument[]
+
+  FileFolder FileFolder[]
+
+  File File[]
+
+  SharedAccess SharedAccess[]
+
+  AuditLog AuditLog[]
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model Team {
+  id    String @id @default(uuid())
+  name  String
+  users User[]
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  name      String
+  industry  String?
+  phone     String?
+  email     String?
+  website   String?
+  address   String?
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  Contact Contact[]
+
+  Deal Deal[]
+
+  Activity Activity[]
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  position  String? // Должность
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  account   Account? @relation(fields: [accountId], references: [id])
+  accountId String?
+  createdAt DateTime @default(now())
+
+  Deal Deal[]
+
+  Activity Activity[]
+
+  ContactTag ContactTag[]
+}
+
+model Deal {
+  id          String   @id @default(uuid())
+  title       String
+  amount      Float
+  stage       String
+  probability Int
+  closeDate   DateTime
+  account     Account? @relation(fields: [accountId], references: [id])
+  accountId   String?
+  contact     Contact? @relation(fields: [contactId], references: [id])
+  contactId   String?
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  createdAt   DateTime @default(now())
+
+  Activity Activity[]
+
+  DealTag DealTag[]
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  title       String
+  type        String // task | call | meeting
+  status      String // ожидается | выполнено | отменено
+  description String?
+  date        DateTime
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
+
+  account   Account? @relation(fields: [accountId], references: [id])
+  accountId String?
+
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  contactId String?
+
+  deal   Deal?   @relation(fields: [dealId], references: [id])
+  dealId String?
+
+  createdAt DateTime @default(now())
+
+  ActivityTag ActivityTag[]
+}
+
+model EmailAccount {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  smtpHost   String
+  smtpPort   Int
+  smtpSecure Boolean
+  email      String
+  password   String // хранится в зашифрованном виде или просто base64
+  createdAt  DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  subject   String
+  body      String // HTML
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+
+  EmailMessage EmailMessage[]
+}
+
+model EmailMessage {
+  id          String         @id @default(uuid())
+  subject     String
+  to          String
+  body        String
+  status      String // sent | failed
+  user        User           @relation(fields: [userId], references: [id])
+  userId      String
+  template    EmailTemplate? @relation(fields: [templateId], references: [id])
+  templateId  String?
+  attachments Json?
+  createdAt   DateTime       @default(now())
+}
+
+model EmailInboxMessage {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  from        String
+  to          String
+  subject     String
+  text        String?
+  html        String?
+  date        DateTime
+  folder      String // inbox, sent, spam, trash, drafts
+  messageId   String   @unique
+  seen        Boolean  @default(false)
+  flagged     Boolean  @default(false)
+  attachments Json? // [{ filename, contentType, size, downloadUrl }]
+  createdAt   DateTime @default(now())
+}
+
+model EmailContact {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  email     String
+  name      String?
+  phone     String?
+  company   String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, email]) // чтобы один контакт не дублировался
+}
+
+model DocumentTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  content   String // HTML или markdown
+  format    String // pdf | docx
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  GeneratedDocument GeneratedDocument[]
+}
+
+model GeneratedDocument {
+  id         String           @id @default(uuid())
+  filePath   String
+  format     String
+  template   DocumentTemplate @relation(fields: [templateId], references: [id])
+  templateId String
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  createdAt  DateTime         @default(now())
+}
+
+model FileFolder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String? // null = корень
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  access    String // private | shared | public
+  createdAt DateTime @default(now())
+  files     File[]   @relation("FolderFiles")
+  accountId String? // Связь с клиентом
+  dealId    String? // Связь с конкретной сделкой
+}
+
+model File {
+  id         String      @id @default(uuid())
+  name       String
+  path       String
+  size       Int
+  mimeType   String
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  folderId   String?
+  folder     FileFolder? @relation("FolderFiles", fields: [folderId], references: [id])
+  dealId     String? // Привязка к сделке
+  contactId  String? // Привязка к контакту
+  taskId     String? // Привязка к задаче
+  publicLink String?     @unique
+  expiresAt  DateTime? // Срок действия ссылки
+  access     String // private | shared | public
+  createdAt  DateTime    @default(now())
+}
+
+model SettingOption {
+  id        String   @id @default(uuid())
+  category  String // deal-stage, activity-status, activity-type, etc.
+  label     String
+  value     String // уникальное значение (например: new, in_progress)
+  position  Int      @default(0) // сортировка
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DealTag {
+  dealId String
+  tagId  String
+  deal   Deal   @relation(fields: [dealId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([dealId, tagId])
+}
+
+model ActivityTag {
+  activityId String
+  tagId      String
+  activity   Activity @relation(fields: [activityId], references: [id])
+  tag        Tag      @relation(fields: [tagId], references: [id])
+
+  @@id([activityId, tagId])
+}
+
+model ContactTag {
+  contactId String
+  tagId     String
+  contact   Contact @relation(fields: [contactId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([contactId, tagId])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  label     String
+  color     String // hex или название
+  createdAt DateTime @default(now())
+
+  // связи
+  DealTags     DealTag[]
+  ActivityTags ActivityTag[]
+  ContactTags  ContactTag[]
+}
+
+model Webhook {
+  id        String   @id @default(uuid())
+  url       String
+  event     String // например: task.created
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SharedAccess {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entityId  String // UUID объекта (dealId, accountId и т.д.)
+  entity    String // Название таблицы, например: deal, account, contact
+  canEdit   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, entityId, entity]) // ⬅️ поменяли с @@index на @@unique
+}
+
+model AutomationRule {
+  id        String   @id @default(uuid())
+  name      String
+  entity    String // deal, activity, contact и т.д.
+  trigger   String // on_create, on_update, cron
+  field     String? // поле, если нужно (например: stage)
+  condition Json // условие в виде JSON: { equals: "Won" }
+  action    Json // действие: { type: "email", templateId: "...", to: "..." }
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model CustomField {
+  id        String             @id @default(uuid())
+  entity    String // Например: deal, activity, contact
+  name      String // Внутреннее имя: custom_ref, etc.
+  label     String // Название для интерфейса
+  type      String // text | number | date | boolean | select
+  options   Json? // Только если type = select
+  required  Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  values    CustomFieldValue[]
+}
+
+model CustomFieldValue {
+  id        String      @id @default(uuid())
+  field     CustomField @relation(fields: [fieldId], references: [id])
+  fieldId   String
+  entity    String // deal | activity | ...
+  entityId  String // ID сделки/активности
+  value     String
+  createdAt DateTime    @default(now())
+
+  @@index([entity, entityId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  entity    String // 'deal', 'activity' и т.д.
+  entityId  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String // create, update, delete
+  changes   Json? // { field: { from: '...', to: '...' } }
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
