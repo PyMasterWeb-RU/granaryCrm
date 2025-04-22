@@ -34,9 +34,13 @@ import { AutomationModule } from './automation/automation.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
+import { PrismaLoggedModule } from './prisma-logged/prisma-logged.module';
+import { SearchModule } from './search/search.module';
+import { CommentsModule } from './comments/comments.module';
+import { InternalModule } from './notifications/internal/internal.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, RolesModule, PrismaModule, TeamsModule, AccountsModule, ContactsModule, DealsModule, ActivitiesModule, EmailModule, EmailTemplateModule, ImapModule, EmailInboxModule, ScheduleModule.forRoot(), EmailContactsModule, DocumentsModule, FileStorageModule, FolderStorageModule, SettingsModule, ReportsModule, TagsModule, ImportExportModule, TelegramModule, WebhooksModule, AclModule, AutomationModule, DashboardModule, CustomFieldsModule, AuditLogModule,],
+  imports: [AuthModule, UsersModule, RolesModule, PrismaModule, TeamsModule, AccountsModule, ContactsModule, DealsModule, ActivitiesModule, EmailModule, EmailTemplateModule, ImapModule, EmailInboxModule, ScheduleModule.forRoot(), EmailContactsModule, DocumentsModule, FileStorageModule, FolderStorageModule, SettingsModule, ReportsModule, TagsModule, ImportExportModule, TelegramModule, WebhooksModule, AclModule, AutomationModule, DashboardModule, CustomFieldsModule, AuditLogModule, PrismaLoggedModule, SearchModule, CommentsModule, InternalModule,],
   controllers: [AppController, EmailInboxController],
   providers: [AppService, ImapService, TelegramService, AclService],
 })

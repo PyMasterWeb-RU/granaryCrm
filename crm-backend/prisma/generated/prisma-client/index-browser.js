@@ -187,6 +187,7 @@ exports.Prisma.ActivityScalarFieldEnum = {
   accountId: 'accountId',
   contactId: 'contactId',
   dealId: 'dealId',
+  parentId: 'parentId',
   createdAt: 'createdAt'
 };
 
@@ -293,7 +294,8 @@ exports.Prisma.FileScalarFieldEnum = {
   publicLink: 'publicLink',
   expiresAt: 'expiresAt',
   access: 'access',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  commentId: 'commentId'
 };
 
 exports.Prisma.SettingOptionScalarFieldEnum = {
@@ -315,11 +317,6 @@ exports.Prisma.SystemSettingScalarFieldEnum = {
 
 exports.Prisma.DealTagScalarFieldEnum = {
   dealId: 'dealId',
-  tagId: 'tagId'
-};
-
-exports.Prisma.ActivityTagScalarFieldEnum = {
-  activityId: 'activityId',
   tagId: 'tagId'
 };
 
@@ -394,6 +391,26 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CommentScalarFieldEnum = {
+  id: 'id',
+  entity: 'entity',
+  entityId: 'entityId',
+  text: 'text',
+  userId: 'userId',
+  mentions: 'mentions',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  message: 'message',
+  link: 'link',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -445,7 +462,6 @@ exports.Prisma.ModelName = {
   SettingOption: 'SettingOption',
   SystemSetting: 'SystemSetting',
   DealTag: 'DealTag',
-  ActivityTag: 'ActivityTag',
   ContactTag: 'ContactTag',
   Tag: 'Tag',
   Webhook: 'Webhook',
@@ -453,7 +469,9 @@ exports.Prisma.ModelName = {
   AutomationRule: 'AutomationRule',
   CustomField: 'CustomField',
   CustomFieldValue: 'CustomFieldValue',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  Comment: 'Comment',
+  Notification: 'Notification'
 };
 
 /**

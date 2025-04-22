@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CustomFieldsService } from '../custom-fields/custom-fields.service';
+import { PrismaLoggedService } from '../prisma-logged/prisma-logged.service'; // ✅
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ContactsService {
   constructor(
     private prisma: PrismaService,
-    private customFieldsService: CustomFieldsService, // ← добавлено
+    private customFieldsService: CustomFieldsService,
+    private prismaLogged: PrismaLoggedService, // ✅
   ) {}
 
   async create(data: {
@@ -17,16 +19,26 @@ export class ContactsService {
     position?: string;
     accountId?: string;
     ownerId: string;
-    customFields?: Record<string, any>; // ← добавлено
+    customFields?: Record<string, any>;
   }) {
     const { customFields, ...contactData } = data;
 
     const contact = await this.prisma.contact.create({ data: contactData });
 
-    // 💾 Сохраняем кастомные поля
     if (customFields) {
-      await this.customFieldsService.saveValues('contact', contact.id, customFields);
+      await this.customFieldsService.saveValues(
+        'contact',
+        contact.id,
+        customFields,
+      );
     }
+
+    await this.prismaLogged.createWithLog(
+      'contact',
+      contact.id,
+      contact.ownerId,
+      async () => contact,
+    );
 
     return contact;
   }
@@ -50,12 +62,18 @@ export class ContactsService {
   ) {
     const { customFields, ...contactData } = data;
 
-    const contact = await this.prisma.contact.findUnique({ where: { id } });
-    if (!contact) throw new NotFoundException('Контакт не найден');
+    const old = await this.prisma.contact.findUnique({ where: { id } });
+    if (!old) throw new NotFoundException('Контакт не найден');
 
-    const updated = await this.prisma.contact.update({ where: { id }, data: contactData });
+    const updated = await this.prismaLogged.updateWithLog(
+      'contact',
+      id,
+      old.ownerId,
+      contactData,
+      () => this.prisma.contact.findUnique({ where: { id } }),
+      () => this.prisma.contact.update({ where: { id }, data: contactData }),
+    );
 
-    // 💾 Обновление кастомных полей
     if (customFields) {
       await this.customFieldsService.saveValues('contact', id, customFields);
     }
@@ -63,7 +81,12 @@ export class ContactsService {
     return updated;
   }
 
-  delete(id: string) {
-    return this.prisma.contact.delete({ where: { id } });
+  async delete(id: string) {
+    const contact = await this.prisma.contact.findUnique({ where: { id } });
+    if (!contact) throw new NotFoundException('Контакт не найден');
+
+    return this.prismaLogged.deleteWithLog('contact', id, contact.ownerId, () =>
+      this.prisma.contact.delete({ where: { id } }),
+    );
   }
 }

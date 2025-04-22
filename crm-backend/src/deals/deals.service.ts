@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { FolderStorageService } from '../folder-storage/folder-storage.service';
 import { AutomationService } from '../automation/automation.service';
-import { TelegramService } from '../notifications/telegram/telegram.service';
 import { CustomFieldsService } from '../custom-fields/custom-fields.service';
+import { FolderStorageService } from '../folder-storage/folder-storage.service';
+import { TelegramService } from '../notifications/telegram/telegram.service';
+import { PrismaLoggedService } from '../prisma-logged/prisma-logged.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DealsService {
@@ -12,7 +13,8 @@ export class DealsService {
     private folderStorageService: FolderStorageService,
     private automationService: AutomationService,
     private telegramService: TelegramService,
-    private customFieldsService: CustomFieldsService, // ⬅️ подключили сервис
+    private customFieldsService: CustomFieldsService,
+    private prismaLogged: PrismaLoggedService, // 👈 подключили логгер
   ) {}
 
   async create(data: {
@@ -24,7 +26,7 @@ export class DealsService {
     accountId?: string;
     contactId?: string;
     ownerId: string;
-    customFields?: Record<string, any>; // ⬅️ добавили поле
+    customFields?: Record<string, any>;
   }) {
     const { customFields, ...dealData } = data;
 
@@ -33,18 +35,17 @@ export class DealsService {
       include: { account: true },
     });
 
-    // 💾 Сохраняем кастомные поля
     if (customFields) {
       await this.customFieldsService.saveValues('deal', deal.id, customFields);
     }
 
-    // 📁 Автоматическое создание папки сделки
     if (deal.accountId && deal.account) {
-      const accountFolder = await this.folderStorageService.findOrCreateAccountFolder(
-        deal.accountId,
-        deal.account.name,
-        deal.ownerId,
-      );
+      const accountFolder =
+        await this.folderStorageService.findOrCreateAccountFolder(
+          deal.accountId,
+          deal.account.name,
+          deal.ownerId,
+        );
 
       await this.folderStorageService.findOrCreateDealFolder(
         deal.id,
@@ -54,13 +55,16 @@ export class DealsService {
       );
     }
 
-    // 🔁 Автоматизация
     await this.automationService.run('deal', 'on_create', deal);
 
-    // 📲 Уведомление в Telegram
-    const user = await this.prisma.user.findUnique({ where: { id: deal.ownerId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: deal.ownerId },
+    });
     if (user?.telegramId) {
-      await this.telegramService.sendNotification(user.id, `📌 Новая сделка: ${deal.title}`);
+      await this.telegramService.sendNotification(
+        user.id,
+        `📌 Новая сделка: ${deal.title}`,
+      );
     }
 
     return deal;
@@ -79,39 +83,55 @@ export class DealsService {
     });
   }
 
-  async update(id: string, data: Partial<Omit<Parameters<typeof this.create>[0], 'ownerId'>>) {
+  async update(
+    id: string,
+    data: Partial<Omit<Parameters<typeof this.create>[0], 'ownerId'>>,
+  ) {
     const { customFields, ...dealData } = data;
 
-    const deal = await this.prisma.deal.findUnique({ where: { id } });
-    if (!deal) throw new NotFoundException('Сделка не найдена');
+    const oldDeal = await this.prisma.deal.findUnique({ where: { id } });
+    if (!oldDeal) throw new NotFoundException('Сделка не найдена');
 
-    const updated = await this.prisma.deal.update({ where: { id }, data: dealData });
+    const updated = await this.prismaLogged.updateWithLog(
+      'deal',
+      id,
+      oldDeal.ownerId,
+      dealData,
+      () => Promise.resolve(oldDeal), // переиспользуем
+      () => this.prisma.deal.update({ where: { id }, data: dealData }),
+    );
 
-    // 💾 Обновление кастомных полей
     if (customFields) {
       await this.customFieldsService.saveValues('deal', id, customFields);
     }
 
-    // 🔁 Автоматизация
-    await this.automationService.run('deal', 'on_update', updated, deal);
+    await this.automationService.run('deal', 'on_update', updated, oldDeal);
 
     return updated;
   }
 
-  delete(id: string) {
-    return this.prisma.deal.delete({ where: { id } });
+  async delete(id: string) {
+    const deal = await this.prisma.deal.findUnique({ where: { id } });
+    if (!deal) throw new NotFoundException('Сделка не найдена');
+
+    return this.prismaLogged.deleteWithLog('deal', id, deal.ownerId, () =>
+      this.prisma.deal.delete({ where: { id } }),
+    );
   }
 
   async moveToStage(id: string, stage: string) {
     const deal = await this.prisma.deal.findUnique({ where: { id } });
     if (!deal) throw new NotFoundException('Сделка не найдена');
 
-    const updated = await this.prisma.deal.update({
-      where: { id },
-      data: { stage },
-    });
+    const updated = await this.prismaLogged.updateWithLog(
+      'deal',
+      id,
+      deal.ownerId,
+      { stage },
+      () => this.prisma.deal.findUnique({ where: { id } }),
+      () => this.prisma.deal.update({ where: { id }, data: { stage } }),
+    );
 
-    // 🔁 Автоматизация
     await this.automationService.run('deal', 'on_update', updated, deal);
 
     return updated;

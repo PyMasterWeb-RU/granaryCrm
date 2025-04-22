@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { AutomationService } from '../automation/automation.service';
-import { TelegramService } from '../notifications/telegram/telegram.service';
 import { CustomFieldsService } from '../custom-fields/custom-fields.service';
+import { TelegramService } from '../notifications/telegram/telegram.service';
+import { PrismaLoggedService } from '../prisma-logged/prisma-logged.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ActivitiesService {
@@ -10,7 +11,8 @@ export class ActivitiesService {
     private prisma: PrismaService,
     private automationService: AutomationService,
     private telegramService: TelegramService,
-    private customFieldsService: CustomFieldsService, // ← добавлено
+    private customFieldsService: CustomFieldsService,
+    private prismaLogged: PrismaLoggedService,
   ) {}
 
   async create(data: {
@@ -23,24 +25,43 @@ export class ActivitiesService {
     accountId?: string;
     contactId?: string;
     dealId?: string;
-    customFields?: Record<string, any>; // ← добавлено
+    parentId?: string;
+    tagIds?: string[];
+    customFields?: Record<string, any>;
   }) {
-    const { customFields, ...activityData } = data;
+    const { customFields, tagIds = [], ...activityData } = data;
 
-    const activity = await this.prisma.activity.create({ data: activityData });
+    const activity = await this.prisma.activity.create({
+      data: {
+        ...activityData,
+        tags: {
+          connect: tagIds.map((id) => ({ id })),
+        },
+      },
+      include: {
+        tags: true,
+      },
+    });
 
-    // 💾 Сохраняем кастомные поля
     if (customFields) {
-      await this.customFieldsService.saveValues('activity', activity.id, customFields);
+      await this.customFieldsService.saveValues(
+        'activity',
+        activity.id,
+        customFields,
+      );
     }
 
-    // 🔁 Автоматизация
     await this.automationService.run('activity', 'on_create', activity);
 
-    // 📲 Telegram-уведомление
-    const user = await this.prisma.user.findUnique({ where: { id: activity.ownerId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: activity.ownerId },
+    });
+
     if (user?.telegramId) {
-      await this.telegramService.sendNotification(user.id, `🗓 Новая задача: ${activity.title}`);
+      await this.telegramService.sendNotification(
+        user.id,
+        `🗓 Новая задача: ${activity.title}`,
+      );
     }
 
     return activity;
@@ -53,6 +74,7 @@ export class ActivitiesService {
         account: true,
         contact: true,
         deal: true,
+        tags: true,
       },
       orderBy: { date: 'asc' },
     });
@@ -61,50 +83,107 @@ export class ActivitiesService {
   findById(id: string) {
     return this.prisma.activity.findUnique({
       where: { id },
-      include: { account: true, contact: true, deal: true },
+      include: {
+        account: true,
+        contact: true,
+        deal: true,
+        tags: true,
+      },
     });
   }
 
-  async update(id: string, data: Partial<Omit<Parameters<typeof this.create>[0], 'ownerId'>>) {
-    const { customFields, ...activityData } = data;
+  async update(
+    id: string,
+    data: Partial<{
+      title: string;
+      type: string;
+      status: string;
+      description?: string;
+      date: Date;
+      accountId?: string;
+      contactId?: string;
+      dealId?: string;
+      parentId?: string;
+      tagIds?: string[];
+      customFields?: Record<string, any>;
+    }>,
+  ) {
+    const { customFields, tagIds, ...activityData } = data;
 
     const old = await this.prisma.activity.findUnique({ where: { id } });
     if (!old) throw new NotFoundException('Активность не найдена');
 
-    const updated = await this.prisma.activity.update({ where: { id }, data: activityData });
+    const updated = await this.prismaLogged.updateWithLog(
+      'activity',
+      id,
+      old.ownerId,
+      activityData,
+      () => this.prisma.activity.findUnique({ where: { id } }),
+      () =>
+        this.prisma.activity.update({
+          where: { id },
+          data: {
+            ...activityData,
+            ...(tagIds && {
+              tags: {
+                set: tagIds.map((id) => ({ id })),
+              },
+            }),
+          },
+          include: {
+            tags: true,
+          },
+        }),
+    );
 
-    // 💾 Обновляем кастомные поля
     if (customFields) {
       await this.customFieldsService.saveValues('activity', id, customFields);
     }
 
-    // 🔁 Автоматизация
     await this.automationService.run('activity', 'on_update', updated, old);
 
     return updated;
   }
 
-  delete(id: string) {
-    return this.prisma.activity.delete({ where: { id } });
+  async delete(id: string) {
+    const activity = await this.prisma.activity.findUnique({ where: { id } });
+    if (!activity) throw new NotFoundException('Задача не найдена');
+
+    return this.prismaLogged.deleteWithLog(
+      'activity',
+      id,
+      activity.ownerId,
+      () => this.prisma.activity.delete({ where: { id } }),
+    );
   }
 
   async moveToStatus(id: string, status: string) {
     const activity = await this.prisma.activity.findUnique({ where: { id } });
     if (!activity) throw new NotFoundException('Задача не найдена');
 
-    const updated = await this.prisma.activity.update({
-      where: { id },
-      data: { status },
-    });
+    const updated = await this.prismaLogged.updateWithLog(
+      'activity',
+      id,
+      activity.ownerId,
+      { status },
+      () => this.prisma.activity.findUnique({ where: { id } }),
+      () => this.prisma.activity.update({ where: { id }, data: { status } }),
+    );
 
-    // 🔁 Автоматизация
-    await this.automationService.run('activity', 'on_update', updated, activity);
+    await this.automationService.run(
+      'activity',
+      'on_update',
+      updated,
+      activity,
+    );
 
     return updated;
   }
 
   async getKanbanActivities() {
     return this.prisma.activity.findMany({
+      where: { type: 'task' },
+      include: { tags: true },
       orderBy: { date: 'asc' },
     });
   }
@@ -122,6 +201,28 @@ export class ActivitiesService {
         account: true,
         contact: true,
         deal: true,
+        tags: true,
+      },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  async getTaskTree(parentId?: string) {
+    return this.prisma.activity.findMany({
+      where: {
+        type: 'task',
+        parentId: parentId ?? null,
+      },
+      include: {
+        tags: true,
+        subtasks: {
+          include: {
+            tags: true,
+            subtasks: {
+              include: { tags: true },
+            },
+          },
+        },
       },
       orderBy: { date: 'asc' },
     });

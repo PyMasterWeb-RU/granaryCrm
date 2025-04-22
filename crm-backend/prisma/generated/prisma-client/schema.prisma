@@ -51,6 +51,10 @@ model User {
   SharedAccess SharedAccess[]
 
   AuditLog AuditLog[]
+
+  Comment Comment[]
+
+  Notification Notification[]
 }
 
 model Role {
@@ -143,9 +147,13 @@ model Activity {
   deal   Deal?   @relation(fields: [dealId], references: [id])
   dealId String?
 
+  parentId String?
+  parent   Activity?  @relation("SubTasks", fields: [parentId], references: [id])
+  subtasks Activity[] @relation("SubTasks")
+
   createdAt DateTime @default(now())
 
-  ActivityTag ActivityTag[]
+  tags Tag[] @relation("ActivityTags")
 }
 
 model EmailAccount {
@@ -271,6 +279,9 @@ model File {
   expiresAt  DateTime? // Срок действия ссылки
   access     String // private | shared | public
   createdAt  DateTime    @default(now())
+
+  commentId String? // 👈 связь с комментарием
+  comment   Comment? @relation("CommentFiles", fields: [commentId], references: [id])
 }
 
 model SettingOption {
@@ -299,15 +310,6 @@ model DealTag {
   @@id([dealId, tagId])
 }
 
-model ActivityTag {
-  activityId String
-  tagId      String
-  activity   Activity @relation(fields: [activityId], references: [id])
-  tag        Tag      @relation(fields: [tagId], references: [id])
-
-  @@id([activityId, tagId])
-}
-
 model ContactTag {
   contactId String
   tagId     String
@@ -324,9 +326,9 @@ model Tag {
   createdAt DateTime @default(now())
 
   // связи
-  DealTags     DealTag[]
-  ActivityTags ActivityTag[]
-  ContactTags  ContactTag[]
+  DealTags    DealTag[]
+  ContactTags ContactTag[]
+  activities  Activity[]   @relation("ActivityTags")
 }
 
 model Webhook {
@@ -396,4 +398,29 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([entity, entityId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  entity    String // Например: deal, activity, account
+  entityId  String // ID сущности
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  mentions  String[] @default([]) // Список userId, кого упомянули
+  createdAt DateTime @default(now())
+  files     File[]   @relation("CommentFiles")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String // task, deal, comment, etc.
+  message   String
+  link      String? // URL перехода
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
 }
