@@ -417,6 +417,18 @@ exports.Prisma.NotificationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.UiFieldConfigScalarFieldEnum = {
+  id: 'id',
+  entity: 'entity',
+  name: 'name',
+  label: 'label',
+  section: 'section',
+  visible: 'visible',
+  required: 'required',
+  order: 'order',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -477,7 +489,8 @@ exports.Prisma.ModelName = {
   CustomFieldValue: 'CustomFieldValue',
   AuditLog: 'AuditLog',
   Comment: 'Comment',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  UiFieldConfig: 'UiFieldConfig'
 };
 
 /**

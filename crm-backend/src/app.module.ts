@@ -38,6 +38,7 @@ import { TeamsModule } from './teams/teams.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UsersModule } from './users/users.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { UiConfigModule } from './ui-config/ui-config.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     SearchModule,
     CommentsModule,
     InternalModule,
+    UiConfigModule,
   ],
   controllers: [AppController, EmailInboxController],
   providers: [AppService, ImapService, TelegramService, AclService],

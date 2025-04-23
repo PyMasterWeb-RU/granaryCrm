@@ -430,3 +430,17 @@ model Notification {
 
   @@index([userId, isRead])
 }
+
+model UiFieldConfig {
+  id        String   @id @default(uuid())
+  entity    String // deal | activity | contact и т.д.
+  name      String // system name: amount, title, status
+  label     String // отображаемое имя
+  section   String? // вкладка или группа
+  visible   Boolean  @default(true)
+  required  Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([entity, name])
+}

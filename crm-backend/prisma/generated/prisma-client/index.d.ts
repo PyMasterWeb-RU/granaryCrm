@@ -158,6 +158,11 @@ export type Comment = $Result.DefaultSelection<Prisma.$CommentPayload>
  * 
  */
 export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
+/**
+ * Model UiFieldConfig
+ * 
+ */
+export type UiFieldConfig = $Result.DefaultSelection<Prisma.$UiFieldConfigPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -573,6 +578,16 @@ export class PrismaClient<
     * ```
     */
   get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.uiFieldConfig`: Exposes CRUD operations for the **UiFieldConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UiFieldConfigs
+    * const uiFieldConfigs = await prisma.uiFieldConfig.findMany()
+    * ```
+    */
+  get uiFieldConfig(): Prisma.UiFieldConfigDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1041,7 +1056,8 @@ export namespace Prisma {
     CustomFieldValue: 'CustomFieldValue',
     AuditLog: 'AuditLog',
     Comment: 'Comment',
-    Notification: 'Notification'
+    Notification: 'Notification',
+    UiFieldConfig: 'UiFieldConfig'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1060,7 +1076,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "role" | "team" | "account" | "contact" | "deal" | "activity" | "emailAccount" | "emailTemplate" | "emailMessage" | "emailInboxMessage" | "emailContact" | "documentTemplate" | "generatedDocument" | "fileFolder" | "file" | "settingOption" | "systemSetting" | "dealTag" | "contactTag" | "tag" | "webhook" | "sharedAccess" | "automationRule" | "customField" | "customFieldValue" | "auditLog" | "comment" | "notification"
+      modelProps: "user" | "role" | "team" | "account" | "contact" | "deal" | "activity" | "emailAccount" | "emailTemplate" | "emailMessage" | "emailInboxMessage" | "emailContact" | "documentTemplate" | "generatedDocument" | "fileFolder" | "file" | "settingOption" | "systemSetting" | "dealTag" | "contactTag" | "tag" | "webhook" | "sharedAccess" | "automationRule" | "customField" | "customFieldValue" | "auditLog" | "comment" | "notification" | "uiFieldConfig"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3210,6 +3226,80 @@ export namespace Prisma {
           }
         }
       }
+      UiFieldConfig: {
+        payload: Prisma.$UiFieldConfigPayload<ExtArgs>
+        fields: Prisma.UiFieldConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UiFieldConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UiFieldConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.UiFieldConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UiFieldConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          findMany: {
+            args: Prisma.UiFieldConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>[]
+          }
+          create: {
+            args: Prisma.UiFieldConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          createMany: {
+            args: Prisma.UiFieldConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UiFieldConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.UiFieldConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          update: {
+            args: Prisma.UiFieldConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.UiFieldConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UiFieldConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UiFieldConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.UiFieldConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UiFieldConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.UiFieldConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUiFieldConfig>
+          }
+          groupBy: {
+            args: Prisma.UiFieldConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UiFieldConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UiFieldConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<UiFieldConfigCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3323,6 +3413,7 @@ export namespace Prisma {
     auditLog?: AuditLogOmit
     comment?: CommentOmit
     notification?: NotificationOmit
+    uiFieldConfig?: UiFieldConfigOmit
   }
 
   /* Types for Logging */
@@ -36807,6 +36898,1087 @@ export namespace Prisma {
 
 
   /**
+   * Model UiFieldConfig
+   */
+
+  export type AggregateUiFieldConfig = {
+    _count: UiFieldConfigCountAggregateOutputType | null
+    _avg: UiFieldConfigAvgAggregateOutputType | null
+    _sum: UiFieldConfigSumAggregateOutputType | null
+    _min: UiFieldConfigMinAggregateOutputType | null
+    _max: UiFieldConfigMaxAggregateOutputType | null
+  }
+
+  export type UiFieldConfigAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type UiFieldConfigSumAggregateOutputType = {
+    order: number | null
+  }
+
+  export type UiFieldConfigMinAggregateOutputType = {
+    id: string | null
+    entity: string | null
+    name: string | null
+    label: string | null
+    section: string | null
+    visible: boolean | null
+    required: boolean | null
+    order: number | null
+    createdAt: Date | null
+  }
+
+  export type UiFieldConfigMaxAggregateOutputType = {
+    id: string | null
+    entity: string | null
+    name: string | null
+    label: string | null
+    section: string | null
+    visible: boolean | null
+    required: boolean | null
+    order: number | null
+    createdAt: Date | null
+  }
+
+  export type UiFieldConfigCountAggregateOutputType = {
+    id: number
+    entity: number
+    name: number
+    label: number
+    section: number
+    visible: number
+    required: number
+    order: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type UiFieldConfigAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type UiFieldConfigSumAggregateInputType = {
+    order?: true
+  }
+
+  export type UiFieldConfigMinAggregateInputType = {
+    id?: true
+    entity?: true
+    name?: true
+    label?: true
+    section?: true
+    visible?: true
+    required?: true
+    order?: true
+    createdAt?: true
+  }
+
+  export type UiFieldConfigMaxAggregateInputType = {
+    id?: true
+    entity?: true
+    name?: true
+    label?: true
+    section?: true
+    visible?: true
+    required?: true
+    order?: true
+    createdAt?: true
+  }
+
+  export type UiFieldConfigCountAggregateInputType = {
+    id?: true
+    entity?: true
+    name?: true
+    label?: true
+    section?: true
+    visible?: true
+    required?: true
+    order?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type UiFieldConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UiFieldConfig to aggregate.
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UiFieldConfigs to fetch.
+     */
+    orderBy?: UiFieldConfigOrderByWithRelationInput | UiFieldConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UiFieldConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UiFieldConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UiFieldConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UiFieldConfigs
+    **/
+    _count?: true | UiFieldConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UiFieldConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UiFieldConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UiFieldConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UiFieldConfigMaxAggregateInputType
+  }
+
+  export type GetUiFieldConfigAggregateType<T extends UiFieldConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateUiFieldConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUiFieldConfig[P]>
+      : GetScalarType<T[P], AggregateUiFieldConfig[P]>
+  }
+
+
+
+
+  export type UiFieldConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UiFieldConfigWhereInput
+    orderBy?: UiFieldConfigOrderByWithAggregationInput | UiFieldConfigOrderByWithAggregationInput[]
+    by: UiFieldConfigScalarFieldEnum[] | UiFieldConfigScalarFieldEnum
+    having?: UiFieldConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UiFieldConfigCountAggregateInputType | true
+    _avg?: UiFieldConfigAvgAggregateInputType
+    _sum?: UiFieldConfigSumAggregateInputType
+    _min?: UiFieldConfigMinAggregateInputType
+    _max?: UiFieldConfigMaxAggregateInputType
+  }
+
+  export type UiFieldConfigGroupByOutputType = {
+    id: string
+    entity: string
+    name: string
+    label: string
+    section: string | null
+    visible: boolean
+    required: boolean
+    order: number
+    createdAt: Date
+    _count: UiFieldConfigCountAggregateOutputType | null
+    _avg: UiFieldConfigAvgAggregateOutputType | null
+    _sum: UiFieldConfigSumAggregateOutputType | null
+    _min: UiFieldConfigMinAggregateOutputType | null
+    _max: UiFieldConfigMaxAggregateOutputType | null
+  }
+
+  type GetUiFieldConfigGroupByPayload<T extends UiFieldConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UiFieldConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UiFieldConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UiFieldConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], UiFieldConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UiFieldConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    entity?: boolean
+    name?: boolean
+    label?: boolean
+    section?: boolean
+    visible?: boolean
+    required?: boolean
+    order?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["uiFieldConfig"]>
+
+  export type UiFieldConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    entity?: boolean
+    name?: boolean
+    label?: boolean
+    section?: boolean
+    visible?: boolean
+    required?: boolean
+    order?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["uiFieldConfig"]>
+
+  export type UiFieldConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    entity?: boolean
+    name?: boolean
+    label?: boolean
+    section?: boolean
+    visible?: boolean
+    required?: boolean
+    order?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["uiFieldConfig"]>
+
+  export type UiFieldConfigSelectScalar = {
+    id?: boolean
+    entity?: boolean
+    name?: boolean
+    label?: boolean
+    section?: boolean
+    visible?: boolean
+    required?: boolean
+    order?: boolean
+    createdAt?: boolean
+  }
+
+  export type UiFieldConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "entity" | "name" | "label" | "section" | "visible" | "required" | "order" | "createdAt", ExtArgs["result"]["uiFieldConfig"]>
+
+  export type $UiFieldConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UiFieldConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      entity: string
+      name: string
+      label: string
+      section: string | null
+      visible: boolean
+      required: boolean
+      order: number
+      createdAt: Date
+    }, ExtArgs["result"]["uiFieldConfig"]>
+    composites: {}
+  }
+
+  type UiFieldConfigGetPayload<S extends boolean | null | undefined | UiFieldConfigDefaultArgs> = $Result.GetResult<Prisma.$UiFieldConfigPayload, S>
+
+  type UiFieldConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UiFieldConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UiFieldConfigCountAggregateInputType | true
+    }
+
+  export interface UiFieldConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UiFieldConfig'], meta: { name: 'UiFieldConfig' } }
+    /**
+     * Find zero or one UiFieldConfig that matches the filter.
+     * @param {UiFieldConfigFindUniqueArgs} args - Arguments to find a UiFieldConfig
+     * @example
+     * // Get one UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UiFieldConfigFindUniqueArgs>(args: SelectSubset<T, UiFieldConfigFindUniqueArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UiFieldConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UiFieldConfigFindUniqueOrThrowArgs} args - Arguments to find a UiFieldConfig
+     * @example
+     * // Get one UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UiFieldConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, UiFieldConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UiFieldConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigFindFirstArgs} args - Arguments to find a UiFieldConfig
+     * @example
+     * // Get one UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UiFieldConfigFindFirstArgs>(args?: SelectSubset<T, UiFieldConfigFindFirstArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UiFieldConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigFindFirstOrThrowArgs} args - Arguments to find a UiFieldConfig
+     * @example
+     * // Get one UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UiFieldConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, UiFieldConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UiFieldConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UiFieldConfigs
+     * const uiFieldConfigs = await prisma.uiFieldConfig.findMany()
+     * 
+     * // Get first 10 UiFieldConfigs
+     * const uiFieldConfigs = await prisma.uiFieldConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const uiFieldConfigWithIdOnly = await prisma.uiFieldConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UiFieldConfigFindManyArgs>(args?: SelectSubset<T, UiFieldConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UiFieldConfig.
+     * @param {UiFieldConfigCreateArgs} args - Arguments to create a UiFieldConfig.
+     * @example
+     * // Create one UiFieldConfig
+     * const UiFieldConfig = await prisma.uiFieldConfig.create({
+     *   data: {
+     *     // ... data to create a UiFieldConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends UiFieldConfigCreateArgs>(args: SelectSubset<T, UiFieldConfigCreateArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UiFieldConfigs.
+     * @param {UiFieldConfigCreateManyArgs} args - Arguments to create many UiFieldConfigs.
+     * @example
+     * // Create many UiFieldConfigs
+     * const uiFieldConfig = await prisma.uiFieldConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UiFieldConfigCreateManyArgs>(args?: SelectSubset<T, UiFieldConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UiFieldConfigs and returns the data saved in the database.
+     * @param {UiFieldConfigCreateManyAndReturnArgs} args - Arguments to create many UiFieldConfigs.
+     * @example
+     * // Create many UiFieldConfigs
+     * const uiFieldConfig = await prisma.uiFieldConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UiFieldConfigs and only return the `id`
+     * const uiFieldConfigWithIdOnly = await prisma.uiFieldConfig.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UiFieldConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, UiFieldConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UiFieldConfig.
+     * @param {UiFieldConfigDeleteArgs} args - Arguments to delete one UiFieldConfig.
+     * @example
+     * // Delete one UiFieldConfig
+     * const UiFieldConfig = await prisma.uiFieldConfig.delete({
+     *   where: {
+     *     // ... filter to delete one UiFieldConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UiFieldConfigDeleteArgs>(args: SelectSubset<T, UiFieldConfigDeleteArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UiFieldConfig.
+     * @param {UiFieldConfigUpdateArgs} args - Arguments to update one UiFieldConfig.
+     * @example
+     * // Update one UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UiFieldConfigUpdateArgs>(args: SelectSubset<T, UiFieldConfigUpdateArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UiFieldConfigs.
+     * @param {UiFieldConfigDeleteManyArgs} args - Arguments to filter UiFieldConfigs to delete.
+     * @example
+     * // Delete a few UiFieldConfigs
+     * const { count } = await prisma.uiFieldConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UiFieldConfigDeleteManyArgs>(args?: SelectSubset<T, UiFieldConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UiFieldConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UiFieldConfigs
+     * const uiFieldConfig = await prisma.uiFieldConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UiFieldConfigUpdateManyArgs>(args: SelectSubset<T, UiFieldConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UiFieldConfigs and returns the data updated in the database.
+     * @param {UiFieldConfigUpdateManyAndReturnArgs} args - Arguments to update many UiFieldConfigs.
+     * @example
+     * // Update many UiFieldConfigs
+     * const uiFieldConfig = await prisma.uiFieldConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UiFieldConfigs and only return the `id`
+     * const uiFieldConfigWithIdOnly = await prisma.uiFieldConfig.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UiFieldConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, UiFieldConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UiFieldConfig.
+     * @param {UiFieldConfigUpsertArgs} args - Arguments to update or create a UiFieldConfig.
+     * @example
+     * // Update or create a UiFieldConfig
+     * const uiFieldConfig = await prisma.uiFieldConfig.upsert({
+     *   create: {
+     *     // ... data to create a UiFieldConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UiFieldConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UiFieldConfigUpsertArgs>(args: SelectSubset<T, UiFieldConfigUpsertArgs<ExtArgs>>): Prisma__UiFieldConfigClient<$Result.GetResult<Prisma.$UiFieldConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UiFieldConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigCountArgs} args - Arguments to filter UiFieldConfigs to count.
+     * @example
+     * // Count the number of UiFieldConfigs
+     * const count = await prisma.uiFieldConfig.count({
+     *   where: {
+     *     // ... the filter for the UiFieldConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends UiFieldConfigCountArgs>(
+      args?: Subset<T, UiFieldConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UiFieldConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UiFieldConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UiFieldConfigAggregateArgs>(args: Subset<T, UiFieldConfigAggregateArgs>): Prisma.PrismaPromise<GetUiFieldConfigAggregateType<T>>
+
+    /**
+     * Group by UiFieldConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UiFieldConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UiFieldConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UiFieldConfigGroupByArgs['orderBy'] }
+        : { orderBy?: UiFieldConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UiFieldConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUiFieldConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UiFieldConfig model
+   */
+  readonly fields: UiFieldConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UiFieldConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UiFieldConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UiFieldConfig model
+   */
+  interface UiFieldConfigFieldRefs {
+    readonly id: FieldRef<"UiFieldConfig", 'String'>
+    readonly entity: FieldRef<"UiFieldConfig", 'String'>
+    readonly name: FieldRef<"UiFieldConfig", 'String'>
+    readonly label: FieldRef<"UiFieldConfig", 'String'>
+    readonly section: FieldRef<"UiFieldConfig", 'String'>
+    readonly visible: FieldRef<"UiFieldConfig", 'Boolean'>
+    readonly required: FieldRef<"UiFieldConfig", 'Boolean'>
+    readonly order: FieldRef<"UiFieldConfig", 'Int'>
+    readonly createdAt: FieldRef<"UiFieldConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UiFieldConfig findUnique
+   */
+  export type UiFieldConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which UiFieldConfig to fetch.
+     */
+    where: UiFieldConfigWhereUniqueInput
+  }
+
+  /**
+   * UiFieldConfig findUniqueOrThrow
+   */
+  export type UiFieldConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which UiFieldConfig to fetch.
+     */
+    where: UiFieldConfigWhereUniqueInput
+  }
+
+  /**
+   * UiFieldConfig findFirst
+   */
+  export type UiFieldConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which UiFieldConfig to fetch.
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UiFieldConfigs to fetch.
+     */
+    orderBy?: UiFieldConfigOrderByWithRelationInput | UiFieldConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UiFieldConfigs.
+     */
+    cursor?: UiFieldConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UiFieldConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UiFieldConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UiFieldConfigs.
+     */
+    distinct?: UiFieldConfigScalarFieldEnum | UiFieldConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UiFieldConfig findFirstOrThrow
+   */
+  export type UiFieldConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which UiFieldConfig to fetch.
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UiFieldConfigs to fetch.
+     */
+    orderBy?: UiFieldConfigOrderByWithRelationInput | UiFieldConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UiFieldConfigs.
+     */
+    cursor?: UiFieldConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UiFieldConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UiFieldConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UiFieldConfigs.
+     */
+    distinct?: UiFieldConfigScalarFieldEnum | UiFieldConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UiFieldConfig findMany
+   */
+  export type UiFieldConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which UiFieldConfigs to fetch.
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UiFieldConfigs to fetch.
+     */
+    orderBy?: UiFieldConfigOrderByWithRelationInput | UiFieldConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UiFieldConfigs.
+     */
+    cursor?: UiFieldConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UiFieldConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UiFieldConfigs.
+     */
+    skip?: number
+    distinct?: UiFieldConfigScalarFieldEnum | UiFieldConfigScalarFieldEnum[]
+  }
+
+  /**
+   * UiFieldConfig create
+   */
+  export type UiFieldConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to create a UiFieldConfig.
+     */
+    data: XOR<UiFieldConfigCreateInput, UiFieldConfigUncheckedCreateInput>
+  }
+
+  /**
+   * UiFieldConfig createMany
+   */
+  export type UiFieldConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UiFieldConfigs.
+     */
+    data: UiFieldConfigCreateManyInput | UiFieldConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UiFieldConfig createManyAndReturn
+   */
+  export type UiFieldConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many UiFieldConfigs.
+     */
+    data: UiFieldConfigCreateManyInput | UiFieldConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UiFieldConfig update
+   */
+  export type UiFieldConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to update a UiFieldConfig.
+     */
+    data: XOR<UiFieldConfigUpdateInput, UiFieldConfigUncheckedUpdateInput>
+    /**
+     * Choose, which UiFieldConfig to update.
+     */
+    where: UiFieldConfigWhereUniqueInput
+  }
+
+  /**
+   * UiFieldConfig updateMany
+   */
+  export type UiFieldConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UiFieldConfigs.
+     */
+    data: XOR<UiFieldConfigUpdateManyMutationInput, UiFieldConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which UiFieldConfigs to update
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * Limit how many UiFieldConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UiFieldConfig updateManyAndReturn
+   */
+  export type UiFieldConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update UiFieldConfigs.
+     */
+    data: XOR<UiFieldConfigUpdateManyMutationInput, UiFieldConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which UiFieldConfigs to update
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * Limit how many UiFieldConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UiFieldConfig upsert
+   */
+  export type UiFieldConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * The filter to search for the UiFieldConfig to update in case it exists.
+     */
+    where: UiFieldConfigWhereUniqueInput
+    /**
+     * In case the UiFieldConfig found by the `where` argument doesn't exist, create a new UiFieldConfig with this data.
+     */
+    create: XOR<UiFieldConfigCreateInput, UiFieldConfigUncheckedCreateInput>
+    /**
+     * In case the UiFieldConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UiFieldConfigUpdateInput, UiFieldConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * UiFieldConfig delete
+   */
+  export type UiFieldConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+    /**
+     * Filter which UiFieldConfig to delete.
+     */
+    where: UiFieldConfigWhereUniqueInput
+  }
+
+  /**
+   * UiFieldConfig deleteMany
+   */
+  export type UiFieldConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UiFieldConfigs to delete
+     */
+    where?: UiFieldConfigWhereInput
+    /**
+     * Limit how many UiFieldConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UiFieldConfig without action
+   */
+  export type UiFieldConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UiFieldConfig
+     */
+    select?: UiFieldConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UiFieldConfig
+     */
+    omit?: UiFieldConfigOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -37205,6 +38377,21 @@ export namespace Prisma {
   };
 
   export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+  export const UiFieldConfigScalarFieldEnum: {
+    id: 'id',
+    entity: 'entity',
+    name: 'name',
+    label: 'label',
+    section: 'section',
+    visible: 'visible',
+    required: 'required',
+    order: 'order',
+    createdAt: 'createdAt'
+  };
+
+  export type UiFieldConfigScalarFieldEnum = (typeof UiFieldConfigScalarFieldEnum)[keyof typeof UiFieldConfigScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -39416,6 +40603,81 @@ export namespace Prisma {
     link?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+  }
+
+  export type UiFieldConfigWhereInput = {
+    AND?: UiFieldConfigWhereInput | UiFieldConfigWhereInput[]
+    OR?: UiFieldConfigWhereInput[]
+    NOT?: UiFieldConfigWhereInput | UiFieldConfigWhereInput[]
+    id?: StringFilter<"UiFieldConfig"> | string
+    entity?: StringFilter<"UiFieldConfig"> | string
+    name?: StringFilter<"UiFieldConfig"> | string
+    label?: StringFilter<"UiFieldConfig"> | string
+    section?: StringNullableFilter<"UiFieldConfig"> | string | null
+    visible?: BoolFilter<"UiFieldConfig"> | boolean
+    required?: BoolFilter<"UiFieldConfig"> | boolean
+    order?: IntFilter<"UiFieldConfig"> | number
+    createdAt?: DateTimeFilter<"UiFieldConfig"> | Date | string
+  }
+
+  export type UiFieldConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    entity?: SortOrder
+    name?: SortOrder
+    label?: SortOrder
+    section?: SortOrderInput | SortOrder
+    visible?: SortOrder
+    required?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UiFieldConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    entity_name?: UiFieldConfigEntityNameCompoundUniqueInput
+    AND?: UiFieldConfigWhereInput | UiFieldConfigWhereInput[]
+    OR?: UiFieldConfigWhereInput[]
+    NOT?: UiFieldConfigWhereInput | UiFieldConfigWhereInput[]
+    entity?: StringFilter<"UiFieldConfig"> | string
+    name?: StringFilter<"UiFieldConfig"> | string
+    label?: StringFilter<"UiFieldConfig"> | string
+    section?: StringNullableFilter<"UiFieldConfig"> | string | null
+    visible?: BoolFilter<"UiFieldConfig"> | boolean
+    required?: BoolFilter<"UiFieldConfig"> | boolean
+    order?: IntFilter<"UiFieldConfig"> | number
+    createdAt?: DateTimeFilter<"UiFieldConfig"> | Date | string
+  }, "id" | "entity_name">
+
+  export type UiFieldConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    entity?: SortOrder
+    name?: SortOrder
+    label?: SortOrder
+    section?: SortOrderInput | SortOrder
+    visible?: SortOrder
+    required?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    _count?: UiFieldConfigCountOrderByAggregateInput
+    _avg?: UiFieldConfigAvgOrderByAggregateInput
+    _max?: UiFieldConfigMaxOrderByAggregateInput
+    _min?: UiFieldConfigMinOrderByAggregateInput
+    _sum?: UiFieldConfigSumOrderByAggregateInput
+  }
+
+  export type UiFieldConfigScalarWhereWithAggregatesInput = {
+    AND?: UiFieldConfigScalarWhereWithAggregatesInput | UiFieldConfigScalarWhereWithAggregatesInput[]
+    OR?: UiFieldConfigScalarWhereWithAggregatesInput[]
+    NOT?: UiFieldConfigScalarWhereWithAggregatesInput | UiFieldConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UiFieldConfig"> | string
+    entity?: StringWithAggregatesFilter<"UiFieldConfig"> | string
+    name?: StringWithAggregatesFilter<"UiFieldConfig"> | string
+    label?: StringWithAggregatesFilter<"UiFieldConfig"> | string
+    section?: StringNullableWithAggregatesFilter<"UiFieldConfig"> | string | null
+    visible?: BoolWithAggregatesFilter<"UiFieldConfig"> | boolean
+    required?: BoolWithAggregatesFilter<"UiFieldConfig"> | boolean
+    order?: IntWithAggregatesFilter<"UiFieldConfig"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UiFieldConfig"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -41633,6 +42895,90 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UiFieldConfigCreateInput = {
+    id?: string
+    entity: string
+    name: string
+    label: string
+    section?: string | null
+    visible?: boolean
+    required?: boolean
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type UiFieldConfigUncheckedCreateInput = {
+    id?: string
+    entity: string
+    name: string
+    label: string
+    section?: string | null
+    visible?: boolean
+    required?: boolean
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type UiFieldConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    required?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UiFieldConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    required?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UiFieldConfigCreateManyInput = {
+    id?: string
+    entity: string
+    name: string
+    label: string
+    section?: string | null
+    visible?: boolean
+    required?: boolean
+    order?: number
+    createdAt?: Date | string
+  }
+
+  export type UiFieldConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    required?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UiFieldConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    visible?: BoolFieldUpdateOperationsInput | boolean
+    required?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -43196,6 +44542,55 @@ export namespace Prisma {
     link?: SortOrder
     isRead?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type UiFieldConfigEntityNameCompoundUniqueInput = {
+    entity: string
+    name: string
+  }
+
+  export type UiFieldConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    entity?: SortOrder
+    name?: SortOrder
+    label?: SortOrder
+    section?: SortOrder
+    visible?: SortOrder
+    required?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UiFieldConfigAvgOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type UiFieldConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    entity?: SortOrder
+    name?: SortOrder
+    label?: SortOrder
+    section?: SortOrder
+    visible?: SortOrder
+    required?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UiFieldConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    entity?: SortOrder
+    name?: SortOrder
+    label?: SortOrder
+    section?: SortOrder
+    visible?: SortOrder
+    required?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UiFieldConfigSumOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type RoleCreateNestedOneWithoutUsersInput = {
