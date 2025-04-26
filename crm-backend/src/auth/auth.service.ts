@@ -1,15 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Response } from 'express'; // для работы с куками
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+  ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, res: Response) {
     const hashed = await bcrypt.hash(dto.password, 10);
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -24,21 +29,37 @@ export class AuthService {
       },
     });
 
-    return this.createToken(user.id);
+    const token = this.jwt.sign({ sub: user.id });
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: false, // в dev оставляем false, чтобы работало по http
+      sameSite: 'none', // чтобы браузер принял куку на кросс-сайте
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { message: 'ok' };
   }
 
-  async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  async login(dto: LoginDto, res: Response) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (!user) throw new UnauthorizedException('Неверный email');
 
     const match = await bcrypt.compare(dto.password, user.password);
     if (!match) throw new UnauthorizedException('Неверный пароль');
 
-    return this.createToken(user.id);
-  }
+    const token = this.jwt.sign({ sub: user.id });
 
-  createToken(userId: string) {
-    const token = this.jwt.sign({ sub: userId });
-    return { access_token: token };
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 дней
+    });
+
+    return { message: 'ok' };
   }
 }

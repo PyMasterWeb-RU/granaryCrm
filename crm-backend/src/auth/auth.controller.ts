@@ -1,7 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Response } from 'express'; // обязательно импортируем!
+import { Public } from 'src/common/decorators/public.decorator';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
-import { Public } from 'src/common/decorators/public.decorator'
+import { LoginDto, RegisterDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -9,13 +10,19 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response, // добавляем Response
+  ) {
+    return this.authService.register(dto, res); // передаём Response в сервис
   }
 
   @Public()
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response, // добавляем Response
+  ) {
+    return this.authService.login(dto, res); // передаём Response в сервис
   }
 }
