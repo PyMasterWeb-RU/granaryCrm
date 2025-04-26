@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { TelegramService } from '../notifications/telegram/telegram.service';
@@ -30,6 +30,7 @@ export class AutomationService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private telegramService: TelegramService,
+    @Inject(forwardRef(() => ActivitiesService))
     private activitiesService: ActivitiesService,
   ) {}
 

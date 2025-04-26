@@ -8,13 +8,22 @@ import { PrismaService } from './prisma/prisma.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ✅ Префикс для всех маршрутов
+  app.setGlobalPrefix('api');
+
+  // ✅ Разрешение CORS для фронтенда на localhost:3000
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
+
+  // ✅ Валидация
   app.useGlobalPipes(new ValidationPipe());
 
-  // Получаем необходимые зависимости
   const reflector = app.get(Reflector);
   const prismaService = app.get(PrismaService);
 
-  // Устанавливаем глобальные Guard'ы
+  // ✅ Глобальные Guard'ы
   app.useGlobalGuards(
     new JwtAuthGuard(reflector),
     new RolesGuard(reflector, prismaService),
