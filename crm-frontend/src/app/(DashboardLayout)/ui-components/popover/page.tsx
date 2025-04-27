@@ -1,0 +1,36 @@
+import Breadcrumb from '@/app/(DashboardLayout)/layout/shared/breadcrumb/Breadcrumb'
+import PageContainer from '@/app/components/container/PageContainer'
+import ChildCard from '@/app/components/shared/ChildCard'
+import ParentCard from '@/app/components/shared/ParentCard'
+import Grid from '@mui/material/Grid'
+
+import ClickPopover from '@/app/components/ui-components/popover/ClickPopover'
+import HoverPopover from '@/app/components/ui-components/popover/HoverPopover'
+
+import ClickPopoverCode from '@/app/components/ui-components/popover/code/ClickPopoverCode'
+import HoverPopoverCode from '@/app/components/ui-components/popover/code/HoverPopoverCode'
+
+const BCrumb = [{ to: '/', title: 'Home' }, { title: 'Popover' }]
+
+const MuiPopover = () => (
+	<PageContainer title='Popover' description='this is Popover'>
+		<Breadcrumb title='Popover' items={BCrumb} />
+
+		<ParentCard title='Popover'>
+			<Grid container spacing={3}>
+				<Grid size={{ xs: 12, sm: 6 }} display='flex' alignItems='stretch'>
+					<ChildCard title='Click' codeModel={<ClickPopoverCode />}>
+						<ClickPopover />
+					</ChildCard>
+				</Grid>
+				<Grid size={{ xs: 12, sm: 6 }} display='flex' alignItems='stretch'>
+					<ChildCard title='Hover' codeModel={<HoverPopoverCode />}>
+						<HoverPopover />
+					</ChildCard>
+				</Grid>
+			</Grid>
+		</ParentCard>
+	</PageContainer>
+)
+
+export default MuiPopover
