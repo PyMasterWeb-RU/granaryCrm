@@ -20,6 +20,9 @@ export class AccountsService {
     email?: string;
     website?: string;
     address?: string;
+    inn?: string;
+    ogrn?: string;
+    kpp: string;
     ownerId: string;
     customFields?: Record<string, any>;
   }) {
