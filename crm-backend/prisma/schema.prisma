@@ -77,6 +77,9 @@ model Account {
   email     String?
   website   String?
   address   String?
+  inn       String?
+  kpp       String?
+  ogrn      String?
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
   createdAt DateTime @default(now())

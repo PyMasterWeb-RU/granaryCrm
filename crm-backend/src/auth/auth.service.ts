@@ -33,9 +33,10 @@ export class AuthService {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: false, // в dev оставляем false, чтобы работало по http
-      sameSite: 'none', // чтобы браузер принял куку на кросс-сайте
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
     return { message: 'ok' };
@@ -57,7 +58,7 @@ export class AuthService {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 дней
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
     return { message: 'ok' };
