@@ -84,12 +84,6 @@ const Menuitems: MenuitemsType[] = [
 	},
 	{
 		id: uniqueId(),
-		title: 'eCommerce',
-		icon: IconShoppingCart,
-		href: '/dashboards/ecommerce',
-	},
-	{
-		id: uniqueId(),
 		title: 'Frontend pages',
 		icon: IconAppWindow,
 		href: '/frontend-pages/',
@@ -152,6 +146,27 @@ const Menuitems: MenuitemsType[] = [
 	},
 	{
 		id: uniqueId(),
+		title: 'Contacts',
+		icon: IconPackage,
+		href: '/apps/contacts',
+		chipColor: 'secondary',
+		children: [
+			{
+				id: uniqueId(),
+				title: 'Список',
+				icon: IconPoint,
+				href: '/apps/contacts',
+			},
+			{
+				id: uniqueId(),
+				title: 'Создать',
+				icon: IconEdit,
+				href: '/apps/contacts/create',
+			},
+		],
+	},
+	{
+		id: uniqueId(),
 		title: 'Companies',
 		icon: IconPackage,
 		href: '/apps/companies',
@@ -170,7 +185,26 @@ const Menuitems: MenuitemsType[] = [
 			},
 		],
 	},
-
+	{
+		id: uniqueId(),
+		title: 'Deals',
+		icon: IconPackage,
+		href: '/apps/deals',
+		children: [
+			{
+				id: uniqueId(),
+				title: 'Список',
+				icon: IconPoint,
+				href: '/apps/deals',
+			},
+			{
+				id: uniqueId(),
+				title: 'Создать',
+				icon: IconEdit,
+				href: '/apps/deals/create',
+			},
+		],
+	},
 	{
 		id: uniqueId(),
 		title: 'Blog',

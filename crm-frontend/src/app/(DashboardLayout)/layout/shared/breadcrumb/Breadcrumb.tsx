@@ -2,13 +2,12 @@
 import React from "react";
 import { Grid, Typography, Box, Breadcrumbs, Theme } from "@mui/material";
 import Link from "next/link";
-
 import { IconCircle } from "@tabler/icons-react";
 import Image from "next/image";
 
 interface BreadCrumbType {
   subtitle?: string;
-  items?: any[];
+  items?: { title: string; to?: string }[];
   title: string;
   children?: JSX.Element;
 }
@@ -20,12 +19,16 @@ const Breadcrumb = ({ subtitle, items, title, children }: BreadCrumbType) => (
       backgroundColor: "primary.light",
       borderRadius: (theme: Theme) => theme.shape.borderRadius / 4,
       p: "30px 25px 20px",
-      marginBottom: "30px",
+      mb: "30px",
       position: "relative",
       overflow: "hidden",
     }}
   >
-    <Grid item xs={12} sm={6} lg={8} mb={1}>
+    {/* Левая часть */}
+    <Grid
+      size={{ xs: 12, sm: 6, lg: 8 }}
+      sx={{ mb: 1 }}
+    >
       <Typography variant="h4">{title}</Typography>
       <Typography
         color="textSecondary"
@@ -36,34 +39,39 @@ const Breadcrumb = ({ subtitle, items, title, children }: BreadCrumbType) => (
       >
         {subtitle}
       </Typography>
+
       <Breadcrumbs
         separator={
           <IconCircle
-            size="5"
+            size={5}
             fill="textSecondary"
-            fillOpacity={"0.6"}
+            fillOpacity={0.6}
             style={{ margin: "0 5px" }}
           />
         }
-        sx={{ alignItems: "center", mt: items ? "10px" : "" }}
+        sx={{ alignItems: "center", mt: items ? 1 : undefined }}
         aria-label="breadcrumb"
       >
-        {items
-          ? items.map((item) => (
-              <div key={item.title}>
-                {item.to ? (
-                  <Link href={item.to} passHref>
-                    <Typography color="textSecondary">{item.title}</Typography>
-                  </Link>
-                ) : (
-                  <Typography color="textPrimary">{item.title}</Typography>
-                )}
-              </div>
-            ))
-          : ""}
+        {items?.map((item) => (
+          <div key={item.title}>
+            {item.to ? (
+              <Link href={item.to} passHref>
+                <Typography color="textSecondary">{item.title}</Typography>
+              </Link>
+            ) : (
+              <Typography color="textPrimary">{item.title}</Typography>
+            )}
+          </div>
+        ))}
       </Breadcrumbs>
     </Grid>
-    <Grid item xs={12} sm={6} lg={4} display="flex" alignItems="flex-end">
+
+    {/* Правая часть */}
+    <Grid
+      size={{ xs: 12, sm: 6, lg: 4 }}
+      display="flex"
+      alignItems="flex-end"
+    >
       <Box
         sx={{
           display: { xs: "none", md: "block", lg: "flex" },
@@ -72,22 +80,18 @@ const Breadcrumb = ({ subtitle, items, title, children }: BreadCrumbType) => (
           width: "100%",
         }}
       >
-        {children ? (
-          <Box sx={{ top: "0px", position: "absolute" }}>{children}</Box>
-        ) : (
-          <>
-            <Box sx={{ top: "0px", position: "absolute" }}>
-              <Image
-                src="/images/breadcrumb/ChatBc.png"
-                alt={"breadcrumbImg"}
-                style={{ width: "165px", height: "165px" }}
-                priority
-                width={165}
-                height={165}
-              />
-            </Box>
-          </>
-        )}
+        <Box sx={{ position: "absolute", top: 0 }}>
+          {children ?? (
+            <Image
+              src="/images/breadcrumb/ChatBc.png"
+              alt="breadcrumbImg"
+              width={165}
+              height={165}
+              priority
+              style={{ width: 165, height: 165 }}
+            />
+          )}
+        </Box>
       </Box>
     </Grid>
   </Grid>

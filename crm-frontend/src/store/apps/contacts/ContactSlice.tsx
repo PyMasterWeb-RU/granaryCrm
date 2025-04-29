@@ -1,19 +1,12 @@
+// src/store/apps/contacts/ContactSlice.ts
 import axios from '../../../utils/axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { AppDispatch } from '../../store';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { AppDispatch } from '../../store';
+import type { ContactsState, Contact } from './types';
 
 const API_URL = '/api/data/contacts/ContactsData';
 
-interface StateType {
-  contacts: any[];
-  contactContent: number;
-  contactSearch: string;
-  editContact: boolean;
-  currentFilter: string;
-}
-
-const initialState = {
+const initialState: ContactsState = {
   contacts: [],
   contactContent: 1,
   contactSearch: '',
@@ -25,80 +18,109 @@ export const ContactSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    getContacts: (state: StateType, action) => {
+    // Загрузить весь список
+    getContacts: (state, action: PayloadAction<Contact[]>) => {
       state.contacts = action.payload;
     },
-    SearchContact: (state: StateType, action) => {
+
+    // Поиск по строке
+    SearchContact: (state, action: PayloadAction<string>) => {
       state.contactSearch = action.payload;
     },
-    SelectContact: (state: StateType, action) => {
+
+    // Выбор текущего контакта (по индексу или id)
+    SelectContact: (state, action: PayloadAction<number>) => {
       state.contactContent = action.payload;
     },
-    DeleteContact: (state: StateType, action) => {
-      state.contacts = state.contacts.map((contact) =>
-        contact.id === action.payload ? { ...contact, deleted: !contact.deleted } : contact,
+
+    // Удалить / восстановить контакт
+    DeleteContact: (state, action: PayloadAction<number>) => {
+      state.contacts = state.contacts.map(contact =>
+        contact.id === action.payload
+          ? { ...contact, deleted: !contact.deleted }
+          : contact
       );
     },
-    toggleStarredContact: (state: StateType, action) => {
-      state.contacts = state.contacts.map((contact) =>
-        contact.id === action.payload ? { ...contact, starred: !contact.starred } : contact,
+
+    // Пометить / снять пометку "избранный"
+    toggleStarredContact: (state, action: PayloadAction<number>) => {
+      state.contacts = state.contacts.map(contact =>
+        contact.id === action.payload
+          ? { ...contact, starred: !contact.starred }
+          : contact
       );
     },
-    isEdit: (state: StateType) => {
+
+    // Включить / выключить режим редактирования
+    isEdit: state => {
       state.editContact = !state.editContact;
     },
-    setVisibilityFilter: (state: StateType, action) => {
+
+    // Установить фильтр видимости
+    setVisibilityFilter: (
+      state,
+      action: PayloadAction<ContactsState['currentFilter']>
+    ) => {
       state.currentFilter = action.payload;
     },
 
+    // Обновить одно поле контакта
     UpdateContact: {
-      reducer: (state: StateType, action: PayloadAction<any>) => {
-        state.contacts = state.contacts.map((contact) =>
-          contact.id === action.payload.id
-            ? { ...contact, [action.payload.field]: action.payload.value }
-            : contact,
+      reducer: (
+        state,
+        action: PayloadAction<{
+          id: number;
+          field: keyof Contact;
+          value: Contact[keyof Contact];
+        }>
+      ) => {
+        const { id, field, value } = action.payload;
+        state.contacts = state.contacts.map(contact =>
+          contact.id === id ? { ...contact, [field]: value } : contact
         );
       },
-      prepare: (id, field, value) => {
-        return {
-          payload: { id, field, value },
-        };
-      },
+      prepare: (
+        id: number,
+        field: keyof Contact,
+        value: Contact[keyof Contact]
+      ) => ({
+        payload: { id, field, value },
+      }),
     },
+
+    // Добавить новый контакт
     addContact: {
-      reducer: (state: StateType, action: PayloadAction<any>) => {
+      reducer: (state, action: PayloadAction<Contact>) => {
         state.contacts.push(action.payload);
       },
       prepare: (
-        id,
-        firstname,
-        lastname,
-        image,
-        department,
-        company,
-        phone,
-        email,
-        address,
-        notes,
-      ) => {
-        return {
-          payload: {
-            id,
-            firstname,
-            lastname,
-            image,
-            department,
-            company,
-            phone,
-            email,
-            address,
-            notes,
-            frequentlycontacted: false,
-            starred: false,
-            deleted: false,
-          },
-        };
-      },
+        id: number,
+        firstname: string,
+        lastname: string,
+        image: string,
+        department: string,
+        company: string,
+        phone: string,
+        email: string,
+        address: string,
+        notes: string
+      ) => ({
+        payload: {
+          id,
+          firstname,
+          lastname,
+          image,
+          department,
+          company,
+          phone,
+          email,
+          address,
+          notes,
+          frequentlycontacted: false,
+          starred: false,
+          deleted: false,
+        } as Contact,
+      }),
     },
   },
 });
@@ -115,12 +137,13 @@ export const {
   setVisibilityFilter,
 } = ContactSlice.actions;
 
+// Thunk для загрузки контактов
 export const fetchContacts = () => async (dispatch: AppDispatch) => {
   try {
-    const response = await axios.get(`${API_URL}`);
+    const response = await axios.get<Contact[]>(API_URL);
     dispatch(getContacts(response.data));
   } catch (err: any) {
-    throw new Error(err);
+    console.error('Failed to fetch contacts', err);
   }
 };
 

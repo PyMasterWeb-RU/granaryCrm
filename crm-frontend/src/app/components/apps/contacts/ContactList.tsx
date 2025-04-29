@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import List from '@mui/material/List';
+import { useEffect, useMemo } from "react";
+import List from "@mui/material/List";
 import { useSelector, useDispatch } from "@/store/hooks";
 import {
   SelectContact,
@@ -10,85 +10,88 @@ import {
 
 import Scrollbar from "../../../components/custom-scroll/Scrollbar";
 import ContactListItem from "./ContactListItem";
-import type { ContactType } from '../../../(DashboardLayout)/types/apps/contact';
+import type { ContactType } from "../../../(DashboardLayout)/types/apps/contact";
 
-type Props = {
-  showrightSidebar: () => void;
+// Ваша функция фильтрации без изменений
+const getVisibleContacts = (
+  contacts: ContactType[],
+  filter: string,
+  contactSearch: string
+) => {
+  const search = contactSearch.toLowerCase();
+  switch (filter) {
+    case "show_all":
+      return contacts.filter(
+        (c) => !c.deleted && c.firstname.toLowerCase().includes(search)
+      );
+    case "frequent_contact":
+      return contacts.filter(
+        (c) =>
+          !c.deleted &&
+          c.frequentlycontacted &&
+          c.firstname.toLowerCase().includes(search)
+      );
+    case "starred_contact":
+      return contacts.filter(
+        (c) =>
+          !c.deleted &&
+          c.starred &&
+          c.firstname.toLowerCase().includes(search)
+      );
+    case "engineering_department":
+      return contacts.filter(
+        (c) =>
+          !c.deleted &&
+          c.department === "Engineering" &&
+          c.firstname.toLowerCase().includes(search)
+      );
+    case "support_department":
+      return contacts.filter(
+        (c) =>
+          !c.deleted &&
+          c.department === "Support" &&
+          c.firstname.toLowerCase().includes(search)
+      );
+    case "sales_department":
+      return contacts.filter(
+        (c) =>
+          !c.deleted &&
+          c.department === "Sales" &&
+          c.firstname.toLowerCase().includes(search)
+      );
+    default:
+      return [];
+  }
 };
 
-const ContactList = ({ showrightSidebar }: Props) => {
-
+const ContactList = ({ showrightSidebar }: { showrightSidebar: () => void }) => {
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(fetchContacts());
   }, [dispatch]);
 
-  const getVisibleContacts = (
-    contacts: ContactType[],
-    filter: string,
-    contactSearch: string
-  ) => {
-    switch (filter) {
-      case "show_all":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
+  // 1) Забираем «сырые» контакты из стора
+  //    и явно приводим их к ContactType[], чтобы TS не ругался
+  const rawContacts = useSelector(
+    (state) => state.contactsReducer.contacts
+  ) as unknown as ContactType[];
 
-      case "frequent_contact":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.frequentlycontacted &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
-
-      case "starred_contact":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.starred &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
-
-      case "engineering_department":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.department === "Engineering" &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
-
-      case "support_department":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.department === "Support" &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
-
-      case "sales_department":
-        return contacts.filter(
-          (c) =>
-            !c.deleted &&
-            c.department === "Sales" &&
-            c.firstname.toLocaleLowerCase().includes(contactSearch)
-        );
-
-      default:
-        throw new Error(`Unknown filter: ${filter}`);
-    }
-  };
-  const contacts = useSelector((state) =>
-    getVisibleContacts(
-      state.contactsReducer.contacts,
-      state.contactsReducer.currentFilter,
-      state.contactsReducer.contactSearch
-    )
+  const currentFilter = useSelector(
+    (state) => state.contactsReducer.currentFilter
   );
+  const contactSearch = useSelector(
+    (state) => state.contactsReducer.contactSearch
+  );
+  const activeId = useSelector(
+    (state) => state.contactsReducer.contactContent
+  ) as unknown as number; // если у вас contactContent хранится string, то тоже можно привести
 
-  const active = useSelector((state) => state.contactsReducer.contactContent);
+  // 2) Мемоизируем функцию фильтрации, чтобы избежать лишних перерисовок
+  const contacts = useMemo(
+    () => getVisibleContacts(rawContacts, currentFilter, contactSearch),
+    [rawContacts, currentFilter, contactSearch]
+  );
 
   return (
     <Scrollbar
@@ -101,14 +104,17 @@ const ContactList = ({ showrightSidebar }: Props) => {
         {contacts.map((contact) => (
           <ContactListItem
             key={contact.id}
-            active={contact.id === active}
+            // явно приводим contact.id к number, если нужно
+            active={Number(contact.id) === activeId}
             {...contact}
             onContactClick={() => {
-              dispatch(SelectContact(contact.id));
+              dispatch(SelectContact(Number(contact.id)));
               showrightSidebar();
             }}
-            onDeleteClick={() => dispatch(DeleteContact(contact.id))}
-            onStarredClick={() => dispatch(toggleStarredContact(contact.id))}
+            onDeleteClick={() => dispatch(DeleteContact(Number(contact.id)))}
+            onStarredClick={() =>
+              dispatch(toggleStarredContact(Number(contact.id)))
+            }
           />
         ))}
       </List>

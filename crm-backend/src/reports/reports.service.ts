@@ -14,22 +14,24 @@ export class ReportsService {
     });
   }
 
-  async getDealsByMonth() {
+  async getDealsByMonth(): Promise<{ month: string; count: number; sum: number }[]> {
     const now = new Date();
     const from = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 5));
     const to = endOfMonth(now);
-
-    return this.prisma.$queryRawUnsafe<any[]>(`
+  
+    return this.prisma.$queryRaw<
+      { month: string; count: number; sum: number }[]
+    >`
       SELECT
         to_char("closeDate", 'YYYY-MM') AS month,
         COUNT(*) AS count,
         SUM(amount)::float AS sum
       FROM "Deal"
-      WHERE "closeDate" BETWEEN '${from.toISOString()}' AND '${to.toISOString()}'
+      WHERE "closeDate" BETWEEN ${from.toISOString()} AND ${to.toISOString()}
       GROUP BY month
       ORDER BY month;
-    `);
-  }
+    `;
+  }  
 
   async getTasksSummary() {
     return this.prisma.activity.groupBy({

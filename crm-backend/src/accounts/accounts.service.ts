@@ -58,8 +58,15 @@ export class AccountsService {
     return this.prisma.account.findMany({ include: { owner: true } });
   }
 
-  findById(id: string) {
-    return this.prisma.account.findUnique({ where: { id } });
+  async findById(id: string) {
+    const account = await this.prisma.account.findUnique({
+      where: { id },
+      include: { owner: true },
+    });
+    if (!account) {
+      throw new NotFoundException('Компания не найдена');
+    }
+    return account;
   }
 
   async update(
