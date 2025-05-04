@@ -13,12 +13,14 @@ import * as React from 'react'
 
 import AccountTab from '@/app/components/pages/account-setting/AccountTab'
 import BillsTab from '@/app/components/pages/account-setting/BillsTab'
+import EmailSettingsTab from '@/app/components/pages/account-setting/EmailSettingsTab'
 import NotificationTab from '@/app/components/pages/account-setting/NotificationTab'
 import SecurityTab from '@/app/components/pages/account-setting/SecurityTab'
 import {
 	IconArticle,
 	IconBell,
 	IconLock,
+	IconMail,
 	IconUserCircle,
 } from '@tabler/icons-react'
 
@@ -98,6 +100,12 @@ const AccountSetting = () => {
 									label='Security'
 									{...a11yProps(3)}
 								/>
+								<Tab
+									icon={<IconMail size={22} />}
+									iconPosition='start'
+									label='Email Settings'
+									{...a11yProps(4)}
+								/>
 							</Tabs>
 						</Box>
 						<Divider />
@@ -113,6 +121,9 @@ const AccountSetting = () => {
 							</TabPanel>
 							<TabPanel value={value} index={3}>
 								<SecurityTab />
+							</TabPanel>
+							<TabPanel value={value} index={4}>
+								<EmailSettingsTab />
 							</TabPanel>
 						</CardContent>
 					</BlankCard>

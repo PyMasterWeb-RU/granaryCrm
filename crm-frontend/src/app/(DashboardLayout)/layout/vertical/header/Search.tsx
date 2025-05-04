@@ -1,135 +1,240 @@
-import { useState } from 'react';
-import {
-  IconButton,
-  Dialog,
-  DialogContent,
-  Stack,
-  Divider,
-  Box,
-  List,
-  ListItemText,
-  Typography,
-  TextField,
-  ListItemButton,
-} from '@mui/material';
-import { IconSearch, IconX } from '@tabler/icons-react';
-import Menuitems from '../sidebar/MenuItems';
-import Link from 'next/link';
+'use client'
 
-interface menuType {
-  title: string;
-  id: string;
-  subheader: string;
-  children: menuType[];
-  href: string;
+import {
+	Box,
+	CircularProgress,
+	Dialog,
+	DialogContent,
+	Divider,
+	IconButton,
+	List,
+	ListItemButton,
+	ListItemText,
+	ListSubheader,
+	Stack,
+	TextField,
+	Typography,
+} from '@mui/material'
+import { IconSearch, IconX } from '@tabler/icons-react'
+import debounce from 'lodash/debounce'
+import Link from 'next/link'
+import { useCallback, useEffect, useState } from 'react'
+
+interface SearchResult<T> {
+	id: string
+	[key: string]: any
 }
 
-const Search = () => {
-  // drawer top
-  const [showDrawer2, setShowDrawer2] = useState(false);
-  const [search, setSerach] = useState('');
+interface ApiResponse {
+	deals: SearchResult<{ title: string; stage: string; createdAt: string }>[]
+	contacts: SearchResult<{
+		firstName: string
+		lastName: string
+		email?: string
+	}>[]
+	accounts: SearchResult<{ name: string; industry?: string }>[]
+	activities: SearchResult<{ title: string; type: string; date: string }>[]
+	emails: SearchResult<{
+		subject: string
+		from: string
+		to: string
+		date: string
+	}>[]
+}
 
-  const handleDrawerClose2 = () => {
-    setShowDrawer2(false);
-  };
+export default function Search() {
+	const API_URL = process.env.NEXT_PUBLIC_API_URL!
+	const [open, setOpen] = useState(false)
+	const [query, setQuery] = useState('')
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+	const [results, setResults] = useState<ApiResponse | null>(null)
 
-  const filterRoutes = (rotr: any, cSearch: string) => {
-    if (rotr.length > 1)
-      return rotr.filter((t: any) =>
-        t.title ? t.href.toLocaleLowerCase().includes(cSearch.toLocaleLowerCase()) : '',
-      );
+	const fetchResults = useCallback(
+		debounce(async (q: string) => {
+			if (!q) {
+				setResults(null)
+				setLoading(false)
+				return
+			}
+			setLoading(true)
+			setError(null)
+			try {
+				const res = await fetch(
+					`${API_URL}/search?q=${encodeURIComponent(q)}`,
+					{
+						credentials: 'include',
+						cache: 'no-store',
+					}
+				)
+				if (!res.ok) throw new Error(res.statusText)
+				const json: ApiResponse = await res.json()
+				setResults(json)
+			} catch (err: any) {
+				console.error('Search error:', err)
+				setError('Не удалось выполнить поиск.')
+			} finally {
+				setLoading(false)
+			}
+		}, 300),
+		[API_URL]
+	)
 
-    return rotr;
-  };
-  const searchData = filterRoutes(Menuitems, search);
+	useEffect(() => {
+		setLoading(true)
+		fetchResults(query.trim())
+	}, [query, fetchResults])
 
-  return (
-    <>
-      <IconButton
-        aria-label="show 4 new mails"
-        color="inherit"
-        aria-controls="search-menu"
-        aria-haspopup="true"
-        onClick={() => setShowDrawer2(true)}
-        size="large"
-      >
-        <IconSearch size="16" />
-      </IconButton>
-      <Dialog
-        open={showDrawer2}
-        onClose={() => setShowDrawer2(false)}
-        fullWidth
-        maxWidth={'sm'}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        PaperProps={{ sx: { position: 'fixed', top: 30, m: 0 } }}
-      >
-        <DialogContent className="testdialog">
-          <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              id="tb-search"
-              placeholder="Search here"
-              fullWidth
-              onChange={(e) => setSerach(e.target.value)}
-              inputProps={{ 'aria-label': 'Search here' }}
-            />
-            <IconButton size="small" onClick={handleDrawerClose2}>
-              <IconX size="18" />
-            </IconButton>
-          </Stack>
-        </DialogContent>
-        <Divider />
-        <Box p={2} sx={{ maxHeight: '60vh', overflow: 'auto' }}>
-          <Typography variant="h5" p={1}>
-            Quick Page Links
-          </Typography>
-          <Box>
-            <List component="nav">
-              {searchData.map((menu: menuType) => {
-                return (
-                  <Box key={menu.title ? menu.id : menu.subheader}>
-                    {menu.title && !menu.children ? (
-                      <ListItemButton sx={{ py: 0.5, px: 1 }} href={menu?.href} component={Link}>
-                        <ListItemText
-                          primary={menu.title}
-                          secondary={menu?.href}
-                          sx={{ my: 0, py: 0.5 }}
-                        />
-                      </ListItemButton>
-                    ) : (
-                      ''
-                    )}
-                    {menu.children ? (
-                      <>
-                        {menu.children.map((child: menuType) => {
-                          return (
-                            <ListItemButton
-                              sx={{ py: 0.5, px: 1 }}
-                              href={child.href}
-                              component={Link}
-                              key={child.title ? child.id : menu.subheader}
-                            >
-                              <ListItemText
-                                primary={child.title}
-                                secondary={child.href}
-                                sx={{ my: 0, py: 0.5 }}
-                              />
-                            </ListItemButton>
-                          );
-                        })}
-                      </>
-                    ) : (
-                      ''
-                    )}
-                  </Box>
-                );
-              })}
-            </List>
-          </Box>
-        </Box>
-      </Dialog>
-    </>
-  );
-};
+	return (
+		<>
+			<IconButton color='inherit' onClick={() => setOpen(true)} size='large'>
+				<IconSearch size={20} />
+			</IconButton>
 
-export default Search;
+			<Dialog
+				open={open}
+				onClose={() => setOpen(false)}
+				fullWidth
+				maxWidth='sm'
+				PaperProps={{ sx: { position: 'fixed', top: 24, m: 0 } }}
+			>
+				<DialogContent>
+					<Stack direction='row' spacing={1} alignItems='center'>
+						<TextField
+							value={query}
+							onChange={e => setQuery(e.target.value)}
+							placeholder='Поиск...'
+							fullWidth
+							inputProps={{ 'aria-label': 'Search' }}
+						/>
+						<IconButton onClick={() => setOpen(false)}>
+							<IconX size={20} />
+						</IconButton>
+					</Stack>
+				</DialogContent>
+				<Divider />
+				<Box p={2} sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
+					{loading ? (
+						<Box textAlign='center' py={4}>
+							<CircularProgress />
+						</Box>
+					) : error ? (
+						<Typography color='error' align='center'>
+							{error}
+						</Typography>
+					) : results ? (
+						<List disablePadding>
+							{results.deals.length > 0 && (
+								<>
+									<ListSubheader>Сделки</ListSubheader>
+									{results.deals.map(item => (
+										<ListItemButton
+											key={item.id}
+											component={Link}
+											href={`/apps/deals/${item.id}`}
+											sx={{ py: 0.5 }}
+										>
+											<ListItemText
+												primary={item.title}
+												secondary={`Стадия: ${item.stage}`}
+											/>
+										</ListItemButton>
+									))}
+								</>
+							)}
+							{results.contacts.length > 0 && (
+								<>
+									<ListSubheader>Контакты</ListSubheader>
+									{results.contacts.map(item => (
+										<ListItemButton
+											key={item.id}
+											component={Link}
+											href={`/apps/contacts/${item.id}`}
+											sx={{ py: 0.5 }}
+										>
+											<ListItemText
+												primary={`${item.firstName} ${item.lastName}`}
+												secondary={item.email || ''}
+											/>
+										</ListItemButton>
+									))}
+								</>
+							)}
+							{results.accounts.length > 0 && (
+								<>
+									<ListSubheader>Компании</ListSubheader>
+									{results.accounts.map(item => (
+										<ListItemButton
+											key={item.id}
+											component={Link}
+											href={`/apps/companies/${item.id}`}
+											sx={{ py: 0.5 }}
+										>
+											<ListItemText
+												primary={item.name}
+												secondary={item.industry || ''}
+											/>
+										</ListItemButton>
+									))}
+								</>
+							)}
+							{results.activities.length > 0 && (
+								<>
+									<ListSubheader>Задачи / Активности</ListSubheader>
+									{results.activities.map(item => (
+										<ListItemButton
+											key={item.id}
+											component={Link}
+											href={`/apps/activities/${item.id}`}
+											sx={{ py: 0.5 }}
+										>
+											<ListItemText
+												primary={item.title}
+												secondary={`${item.type} — ${new Date(
+													item.date
+												).toLocaleString()}`}
+											/>
+										</ListItemButton>
+									))}
+								</>
+							)}
+							{results.emails.length > 0 && (
+								<>
+									<ListSubheader>Почта</ListSubheader>
+									{results.emails.map(item => (
+										<ListItemButton
+											key={item.id}
+											component={Link}
+											href={`/apps/email/${item.id}`}
+											sx={{ py: 0.5 }}
+										>
+											<ListItemText
+												primary={item.subject}
+												secondary={`От: ${item.from} → ${item.to}`}
+											/>
+										</ListItemButton>
+									))}
+								</>
+							)}
+							{[
+								['deals', 'Сделки'],
+								['contacts', 'Контакты'],
+								['accounts', 'Компании'],
+								['activities', 'Активности'],
+								['emails', 'Почта'],
+							].every(([key]) => (results as any)[key].length === 0) && (
+								<Typography align='center' sx={{ py: 2 }}>
+									Ничего не найдено
+								</Typography>
+							)}
+						</List>
+					) : (
+						<Typography align='center' color='text.secondary'>
+							Введите запрос для поиска
+						</Typography>
+					)}
+				</Box>
+			</Dialog>
+		</>
+	)
+}

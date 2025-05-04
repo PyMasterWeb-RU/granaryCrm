@@ -31,7 +31,9 @@ export class EmailInboxService {
   async getAttachment(messageId: string, filename: string) {
     const message = await this.getById(messageId);
 
-    const file = (message.attachments as any[]).find((a) => a.filename === filename);
+    const file = (message.attachments as any[])?.find(
+      (a) => a.filename === filename,
+    );
     if (!file) throw new Error('Файл не найден');
 
     return {
@@ -52,6 +54,20 @@ export class EmailInboxService {
         ],
       },
       orderBy: { date: 'desc' },
+    });
+  }
+
+  async updateStatus(
+    userId: string,
+    id: string,
+    data: { seen?: boolean; flagged?: boolean; folder?: string },
+  ) {
+    const message = await this.getById(id);
+    if (message.userId !== userId) throw new Error('Нет доступа');
+
+    return this.prisma.emailInboxMessage.update({
+      where: { id },
+      data,
     });
   }
 }

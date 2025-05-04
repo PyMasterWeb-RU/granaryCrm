@@ -1,239 +1,132 @@
-import React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+'use client'
 
-// components
-import BlankCard from '../../shared/BlankCard';
-import CustomTextField from '../../forms/theme-elements/CustomTextField';
-import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel';
-import CustomSwitch from '../../forms/theme-elements/CustomSwitch';
-import { Stack } from '@mui/system';
 import {
-  IconArticle,
-  IconCheckbox,
-  IconClock,
-  IconDownload,
-  IconMail,
-  IconPlayerPause,
-  IconTruckDelivery,
-} from '@tabler/icons-react';
+	Avatar,
+	Box,
+	Button,
+	CardContent,
+	Grid,
+	Stack,
+	Typography,
+} from '@mui/material'
+import { IconBell } from '@tabler/icons-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
+import React from 'react'
+import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel'
+import CustomSwitch from '../../forms/theme-elements/CustomSwitch'
+import CustomTextField from '../../forms/theme-elements/CustomTextField'
+import BlankCard from '../../shared/BlankCard'
+
+interface NotificationSettings {
+	notificationsEnabled: boolean
+	email: string
+}
+
+const fetchNotificationSettings = async () => {
+	const response = await axios.get('/api/users/me')
+	return {
+		notificationsEnabled: response.data.notificationsEnabled,
+		email: response.data.email,
+	}
+}
+
+const updateNotificationSettings = async (
+	data: Partial<NotificationSettings>
+) => {
+	const response = await axios.patch('/api/users/me', data)
+	return response.data
+}
 
 const NotificationTab = () => {
-  return (
-    <>
-      <Grid container spacing={3} justifyContent="center">
-        <Grid item xs={12} lg={9}>
-          <BlankCard>
-            <CardContent>
-              <Typography variant="h4" mb={2}>
-                Notification Preferences
-              </Typography>
-              <Typography color="textSecondary">
-                Select the notificaitons ou would like to receive via email. Please note that you
-                cannot opt out of receving service messages, such as payment, security or legal
-                notifications.
-              </Typography>
+	const queryClient = useQueryClient()
+	const { data: settings, isLoading } = useQuery({
+		queryKey: ['notificationSettings'],
+		queryFn: fetchNotificationSettings,
+	})
 
-              <CustomFormLabel htmlFor="text-email">Email Address*</CustomFormLabel>
-              <CustomTextField id="text-email" variant="outlined" fullWidth />
-              <Typography color="textSecondary">Required for notificaitons.</Typography>
+	const mutation = useMutation({
+		mutationFn: updateNotificationSettings,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['notificationSettings'] })
+			alert('Настройки уведомлений сохранены!')
+		},
+	})
 
-              {/* list 1 */}
-              <Stack direction="row" spacing={2} mt={4}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconArticle size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Our newsletter
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    We&apos;ll always let you know about important changes
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch />
-                </Box>
-              </Stack>
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, checked } = e.target
+		mutation.mutate({ [name]: checked })
+	}
 
-              {/* list 2 */}
-              <Stack direction="row" spacing={2} mt={3}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconCheckbox size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Order Confirmation
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    You will be notified when customer order any product
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch checked />
-                </Box>
-              </Stack>
+	if (isLoading) return <Typography>Загрузка...</Typography>
 
-              {/* list 3 */}
-              <Stack direction="row" spacing={2} mt={3}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconClock size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Order Status Changed
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    You will be notified when customer make changes to the order
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch checked />
-                </Box>
-              </Stack>
+	return (
+		<Grid container spacing={3} justifyContent='center'>
+			<Grid item xs={12} lg={9}>
+				<BlankCard>
+					<CardContent>
+						<Typography variant='h4' mb={2}>
+							Notification Preferences
+						</Typography>
+						<Typography color='textSecondary' mb={3}>
+							Manage your notification settings.
+						</Typography>
 
-              {/* list 4 */}
-              <Stack direction="row" spacing={2} mt={3}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconTruckDelivery size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Order Delivered
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    You will be notified once the order is delivered
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch />
-                </Box>
-              </Stack>
+						<CustomFormLabel htmlFor='email'>Email Address</CustomFormLabel>
+						<CustomTextField
+							id='email'
+							value={settings?.email || ''}
+							variant='outlined'
+							fullWidth
+							disabled
+						/>
+						<Typography color='textSecondary' mb={3}>
+							Used for notifications.
+						</Typography>
 
-              {/* list 5 */}
-              <Stack direction="row" spacing={2} mt={3}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconMail size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Email Notification
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Turn on email notificaiton to get updates through email
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch checked />
-                </Box>
-              </Stack>
-            </CardContent>
-          </BlankCard>
-        </Grid>
+						<Stack direction='row' spacing={2} mt={4}>
+							<Avatar
+								variant='rounded'
+								sx={{
+									bgcolor: 'grey.100',
+									color: 'grey.500',
+									width: 48,
+									height: 48,
+								}}
+							>
+								<IconBell size='22' />
+							</Avatar>
+							<Box>
+								<Typography variant='h6' mb={1}>
+									Enable Notifications
+								</Typography>
+								<Typography variant='subtitle1' color='textSecondary'>
+									Receive notifications via email and in-app.
+								</Typography>
+							</Box>
+							<Box sx={{ ml: 'auto !important' }}>
+								<CustomSwitch
+									id='notificationsEnabled'
+									name='notificationsEnabled'
+									checked={settings?.notificationsEnabled || false}
+									onChange={handleChange}
+								/>
+							</Box>
+						</Stack>
+					</CardContent>
+				</BlankCard>
+			</Grid>
 
-        {/* 2 */}
-        <Grid item xs={12} lg={9}>
-          <BlankCard>
-            <CardContent>
-              <Typography variant="h4" mb={2}>
-                Date & Time
-              </Typography>
-              <Typography color="textSecondary">
-                Time zones and calendar display settings.
-              </Typography>
+			<Stack direction='row' spacing={2} sx={{ justifyContent: 'end' }} mt={3}>
+				<Button size='large' variant='contained' color='primary' disabled>
+					Save
+				</Button>
+				<Button size='large' variant='text' color='error' disabled>
+					Cancel
+				</Button>
+			</Stack>
+		</Grid>
+	)
+}
 
-              {/* list 1 */}
-              <Stack direction="row" spacing={2} mt={4}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconClock size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Time zone
-                  </Typography>
-                  <Typography variant="h6" mb={1}>
-                    (UTC + 02:00) Athens, Bucharet
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <Tooltip title="Download">
-                    <IconButton>
-                      <IconDownload size="22" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Stack>
-            </CardContent>
-          </BlankCard>
-        </Grid>
-
-        {/* 3 */}
-        <Grid item xs={12} lg={9}>
-          <BlankCard>
-            <CardContent>
-              <Typography variant="h4" mb={2}>
-                Ignore Tracking
-              </Typography>
-
-              {/* list 1 */}
-              <Stack direction="row" spacing={2} mt={4}>
-                <Avatar
-                  variant="rounded"
-                  sx={{ bgcolor: 'grey.100', color: 'grey.500', width: 48, height: 48 }}
-                >
-                  <IconPlayerPause size="22" />
-                </Avatar>
-                <Box>
-                  <Typography variant="h6" mb={1}>
-                    Ignore Browser Tracking
-                  </Typography>
-                  <Typography variant="subtitle1" color="textSecondary">
-                    Browser Cookie
-                  </Typography>
-                </Box>
-                <Box sx={{ ml: 'auto !important' }}>
-                  <CustomSwitch />
-                </Box>
-              </Stack>
-            </CardContent>
-          </BlankCard>
-        </Grid>
-      </Grid>
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: 'end' }} mt={3}>
-        <Button size="large" variant="contained" color="primary">
-          Save
-        </Button>
-        <Button size="large" variant="text" color="error">
-          Cancel
-        </Button>
-      </Stack>
-    </>
-  );
-};
-
-export default NotificationTab;
+export default NotificationTab

@@ -1,80 +1,92 @@
-import axios from '../../../utils/axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { AppDispatch } from '../../store';
+import { createSlice } from '@reduxjs/toolkit'
 
-const API_URL = '/api/data/email/EmailData';
-
-interface StateType {
-  emails: any[];
-  emailContent: number;
-  emailSearch: string;
-  currentFilter: string;
+interface Email {
+	id: string
+	from: string
+	to: string
+	subject: string
+	text?: string
+	html?: string
+	date: string
+	folder: string
+	seen: boolean
+	flagged: boolean
+	thumbnail?: string
+	attachments?: {
+		filename: string
+		contentType: string
+		size: number
+		path: string
+	}[]
 }
 
-const initialState = {
-  emails: [],
-  emailContent: 1,
-  emailSearch: '',
-  currentFilter: 'inbox',
-};
+interface EmailState {
+	emails: Email[]
+	templates: any[]
+	currentFilter: string
+	emailSearch: string
+	emailContent: string | null
+	selectedEmail: Email | null
+}
 
-export const EmailSlice = createSlice({
-  name: 'email',
-  initialState,
-  reducers: {
-    getEmails: (state: StateType, action) => {
-      state.emails = action.payload;
-    },
-    SearchEmail: (state: StateType, action) => {
-      state.emailSearch = action.payload;
-    },
-    SelectEmail: (state: StateType, action) => {
-      state.emailContent = action.payload;
-    },
-    starEmail: (state: StateType, action) => {
-      state.emails = state.emails.map((email) =>
-        email.id === action.payload ? { ...email, starred: !email.starred } : email,
-      );
-    },
-    importantEmail: (state: StateType, action) => {
-      state.emails = state.emails.map((email) =>
-        email.id === action.payload ? { ...email, important: !email.important } : email,
-      );
-    },
-    checkEmail: (state: StateType, action) => {
-      state.emails = state.emails.map((email) =>
-        email.id === action.payload ? { ...email, checked: !email.checked } : email,
-      );
-    },
-    deleteEmail: (state: StateType, action) => {
-      state.emails = state.emails.map((email) =>
-        email.id === action.payload ? { ...email, trash: !email.trash } : email,
-      );
-    },
-    setVisibilityFilter: (state, action) => {
-      state.currentFilter = action.payload;
-    },
-  },
-});
+const initialState: EmailState = {
+	emails: [],
+	templates: [],
+	currentFilter: 'inbox',
+	emailSearch: '',
+	emailContent: null,
+	selectedEmail: null,
+}
+
+const emailSlice = createSlice({
+	name: 'email',
+	initialState,
+	reducers: {
+		fetchEmails(state, action) {
+			state.emails = action.payload
+		},
+		fetchTemplates(state, action) {
+			state.templates = action.payload
+		},
+		setVisibilityFilter(state, action) {
+			state.currentFilter = action.payload
+		},
+		SearchEmail(state, action) {
+			state.emailSearch = action.payload
+		},
+		SelectEmail(state, action) {
+			state.emailContent = action.payload
+			state.selectedEmail =
+				state.emails.find(email => email.id === action.payload) || null
+		},
+		updateEmail(state, action) {
+			const { id, ...updates } = action.payload
+			const email = state.emails.find(e => e.id === id)
+			if (email) {
+				Object.assign(email, updates)
+			}
+			if (state.selectedEmail && state.selectedEmail.id === id) {
+				Object.assign(state.selectedEmail, updates)
+			}
+		},
+		deleteEmail(state, action) {
+			state.emails = state.emails.filter(email => email.id !== action.payload)
+			if (state.emailContent === action.payload) {
+				state.emailContent = null
+				state.selectedEmail = null
+			}
+		},
+	},
+})
 
 export const {
-  SearchEmail,
-  SelectEmail,
-  getEmails,
-  starEmail,
-  importantEmail,
-  setVisibilityFilter,
-  deleteEmail,
-  checkEmail,
-} = EmailSlice.actions;
+	fetchEmails,
+	fetchTemplates,
+	setVisibilityFilter,
+	SearchEmail,
+	SelectEmail,
+	updateEmail,
+	deleteEmail,
+} = emailSlice.actions
 
-export const fetchEmails = () => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.get(`${API_URL}`);
-    dispatch(getEmails(response.data));
-  } catch (err: any) {
-    throw new Error(err);
-  }
-};
-
-export default EmailSlice.reducer;
+export default emailSlice.reducer

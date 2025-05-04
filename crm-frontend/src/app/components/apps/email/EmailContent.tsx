@@ -1,231 +1,309 @@
-import React, { useState } from "react";
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
-import { EmailType } from '../../../(DashboardLayout)/types/apps/email';
-import { IconStar, IconAlertCircle, IconTrash } from "@tabler/icons-react";
-import { useSelector, useDispatch } from "@/store/hooks";
+'use client'
+
+import { deleteEmail, updateEmail } from '@/store/apps/email/EmailSlice'
+import { useDispatch, useSelector } from '@/store/hooks'
 import {
-  starEmail,
-  importantEmail,
-  deleteEmail,
-} from "@/store/apps/email/EmailSlice";
-import dynamic from "next/dynamic";
-import "react-quill/dist/quill.snow.css";
+	Avatar,
+	Box,
+	Button,
+	Chip,
+	Divider,
+	Grid,
+	IconButton,
+	Paper,
+	Stack,
+	Typography,
+} from '@mui/material'
+import { useTheme } from '@mui/material/styles'
+import { IconFlag, IconStar, IconTrash } from '@tabler/icons-react'
+import axios from 'axios'
+import dynamic from 'next/dynamic'
+import Image from 'next/image'
+import { useState } from 'react'
+import { toast } from 'react-toastify'
+
 const ReactQuill: any = dynamic(
-  async () => {
-    const { default: RQ } = await import("react-quill");
-    // eslint-disable-next-line react/display-name
-    return ({ ...props }) => <RQ {...props} />;
-  },
-  {
-    ssr: false,
-  }
-);
-import Image from "next/image";
+	async () => {
+		const { default: RQ } = await import('react-quill')
+		return (props: any) => <RQ {...props} />
+	},
+	{ ssr: false }
+)
 
-const EmailContent = () => {
-  const emailDetails: EmailType = useSelector(
-    (state) => state.emailReducer.emails[state.emailReducer.emailContent - 1]
-  );
+export default function EmailContent() {
+	const dispatch = useDispatch()
+	const theme = useTheme()
+	const user = useSelector(state => state.auth.user)
+	const emailDetails = useSelector(state => state.emailReducer.selectedEmail)
+	const [showReply, setShowReply] = useState(false)
+	const [replyText, setReplyText] = useState('')
 
-  const [show, setShow] = useState(false);
-  const [text, setText] = useState("");
+	const axiosOpts = { withCredentials: true }
 
-  const toggleEditor = () => {
-    setShow(!show);
-  };
+	const attachments = emailDetails?.attachments ?? []
 
-  const dispatch = useDispatch();
+	const handleReply = async () => {
+		try {
+			if (!user) throw new Error('Пользователь не авторизован')
+			if (!emailDetails?.id) throw new Error('Письмо не выбрано')
 
-  const theme = useTheme();
+			await axios.post(
+				`/api/email/reply/${emailDetails.id}`,
+				{ body: replyText },
+				axiosOpts
+			)
+			toast.success('Ответ отправлен')
+			setShowReply(false)
+			setReplyText('')
+		} catch {
+			toast.error('Ошибка при отправке ответа')
+		}
+	}
 
-  const warningColor = theme.palette.warning.main;
-  const errorColor = theme.palette.error.light;
+	const handleForward = async () => {
+		try {
+			if (!user) throw new Error('Пользователь не авторизован')
+			if (!emailDetails?.id) throw new Error('Письмо не выбрано')
 
-  return emailDetails && !emailDetails.trash ? (
-    <Box>
-      <Stack p={2} gap={0} direction="row">
-        <Tooltip title={emailDetails.starred ? "Unstar" : "Star"}>
-          <IconButton onClick={() => dispatch(starEmail(emailDetails.id))}>
-            <IconStar
-              stroke={1.3}
-              size="18"
-              style={{
-                fill: emailDetails.starred ? warningColor : "",
-                stroke: emailDetails.starred ? warningColor : "",
-              }}
-            />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={emailDetails ? "Important" : "Not Important"}>
-          <IconButton onClick={() => dispatch(importantEmail(emailDetails.id))}>
-            <IconAlertCircle
-              size="18"
-              stroke={1.3}
-              style={{
-                fill: emailDetails.important ? errorColor : "",
-              }}
-            />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton onClick={() => dispatch(deleteEmail(emailDetails.id))}>
-            <IconTrash size="18" stroke={1.3} />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-      <Divider />
-      <Box p={3}>
-        {/* ------------------------------------------- */}
-        {/* Email Detail page */}
-        {/* ------------------------------------------- */}
-        <Box display="flex" alignItems="center" sx={{ pb: 3 }}>
-          <Avatar
-            alt={emailDetails.from}
-            src={emailDetails.thumbnail}
-            sx={{ width: 40, height: 40 }}
-          />
-          <Box sx={{ ml: 2 }}>
-            <Typography variant="h6">{emailDetails.from}</Typography>
-            <Typography variant="body2">{emailDetails.To}</Typography>
-          </Box>
-          <Chip
-            label={emailDetails.label}
-            sx={{ ml: "auto", height: "21px" }}
-            size="small"
-            color={
-              emailDetails.label === "Promotional"
-                ? "primary"
-                : emailDetails.label === "Social"
-                ? "error"
-                : "success"
-            }
-          />
-        </Box>
-        {/* ------------------------------------------- */}
-        {/* Email Detail page */}
-        {/* ------------------------------------------- */}
+			const to = prompt('Введите адрес получателя:')
+			if (!to) return
 
-        <Box sx={{ py: 2 }}>
-          <Typography variant="h4">{emailDetails.subject}</Typography>
-        </Box>
+			await axios.post(
+				`/api/email/forward/${emailDetails.id}`,
+				{ to },
+				axiosOpts
+			)
+			toast.success('Письмо переслано')
+		} catch {
+			toast.error('Ошибка при пересылке письма')
+		}
+	}
 
-        <Box sx={{ py: 2 }}>
-          <div
-            dangerouslySetInnerHTML={{ __html: emailDetails.emailContent }}
-          />
-        </Box>
-      </Box>
-      {emailDetails?.attchments?.length == 0 ? null : (
-        <>
-          <Divider />
-          <Box p={3}>
-            <Typography variant="h6">
-              Attachments ({emailDetails?.attchments?.length})
-            </Typography>
+	const handleToggleStar = async () => {
+		try {
+			if (!user) throw new Error('Пользователь не авторизован')
+			if (!emailDetails?.id) throw new Error('Письмо не выбрано')
 
-            <Grid container spacing={3}>
-              {emailDetails.attchments?.map((attach) => {
-                return (
-                  <Grid item lg={4} key={attach.id}>
-                    <Stack direction="row" gap={2} mt={2}>
-                      <Avatar
-                        variant="rounded"
-                        sx={{
-                          width: "48px",
-                          height: "48px",
-                          bgcolor: (theme: any) => theme.palette.grey[100],
-                        }}
-                      >
-                        <Avatar
-                          src={attach.image}
-                          alt="av"
-                          variant="rounded"
-                          sx={{ width: "24px", height: "24px" }}
-                        ></Avatar>
-                      </Avatar>
-                      <Box mr={"auto"}>
-                        <Typography variant="subtitle2" fontWeight={600} mb={1}>
-                          {attach.title}
-                        </Typography>
-                        <Typography variant="body2">
-                          {attach.fileSize}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </Box>
-          <Divider />
-        </>
-      )}
+			const newFlagged = !emailDetails.flagged
+			await axios.patch(
+				`/api/inbox/${emailDetails.id}`,
+				{ flagged: newFlagged },
+				axiosOpts
+			)
+			dispatch(updateEmail({ id: emailDetails.id, flagged: newFlagged }))
+		} catch {
+			toast.error('Ошибка при обновлении статуса')
+		}
+	}
 
-      <Box p={3}>
-        <Stack direction="row" gap={2}>
-          <Button
-            variant="outlined"
-            size="small"
-            color="primary"
-            onClick={toggleEditor}
-          >
-            Reply
-          </Button>
-          <Button variant="outlined" size="small">
-            Forward
-          </Button>
-        </Stack>
+	const handleToggleSeen = async () => {
+		try {
+			if (!user) throw new Error('Пользователь не авторизован')
+			if (!emailDetails?.id) throw new Error('Письмо не выбрано')
 
-        {/* Editor */}
-        {show ? (
-          <Box mt={3}>
-            <Paper variant="outlined">
-              <ReactQuill
-                value={text}
-                onChange={(value: any) => {
-                  setText(value);
-                }}
-                placeholder="Type here..."
-              />
-            </Paper>
-          </Box>
-        ) : null}
-      </Box>
-    </Box>
-  ) : (
-    <Box
-      p={3}
-      height="50vh"
-      display={"flex"}
-      justifyContent="center"
-      alignItems={"center"}
-    >
-      {/* ------------------------------------------- */}
-      {/* If no Email  */}
-      {/* ------------------------------------------- */}
-      <Box>
-        <Typography variant="h4">Please Select a Mail</Typography>
-        <br />
-        <Image
-          src="/images/breadcrumb/emailSv.png"
-          alt={"emailIcon"}
-          width= {250}
-          height= {250}
-        />
-      </Box>
-    </Box>
-  );
-};
+			const newSeen = !emailDetails.seen
+			await axios.patch(
+				`/api/inbox/${emailDetails.id}`,
+				{ seen: newSeen },
+				axiosOpts
+			)
+			dispatch(updateEmail({ id: emailDetails.id, seen: newSeen }))
+		} catch {
+			toast.error('Ошибка при обновлении статуса')
+		}
+	}
 
-export default EmailContent;
+	const handleDelete = async () => {
+		try {
+			if (!user) throw new Error('Пользователь не авторизован')
+			if (!emailDetails?.id) throw new Error('Письмо не выбрано')
+
+			await axios.patch(
+				`/api/inbox/${emailDetails.id}`,
+				{ folder: 'trash' },
+				axiosOpts
+			)
+			dispatch(deleteEmail(emailDetails.id))
+			toast.success('Письмо перемещено в корзину')
+		} catch {
+			toast.error('Ошибка при удалении письма')
+		}
+	}
+
+	if (!emailDetails) {
+		return (
+			<Box
+				p={3}
+				height='50vh'
+				display='flex'
+				justifyContent='center'
+				alignItems='center'
+			>
+				<Box textAlign='center'>
+					<Typography variant='h4'>Выберите письмо</Typography>
+					<Image
+						src='/images/breadcrumb/emailSv.png'
+						alt='emailIcon'
+						width={250}
+						height={250}
+					/>
+				</Box>
+			</Box>
+		)
+	}
+
+	return (
+		<Box>
+			<Stack p={2} direction='row' spacing={1}>
+				<IconButton onClick={handleToggleStar}>
+					<IconStar
+						stroke={1.3}
+						size={18}
+						style={{
+							fill: emailDetails.flagged
+								? theme.palette.warning.main
+								: undefined,
+							stroke: emailDetails.flagged
+								? theme.palette.warning.main
+								: undefined,
+						}}
+					/>
+				</IconButton>
+				<IconButton onClick={handleToggleSeen}>
+					<IconFlag
+						size={18}
+						stroke={1.3}
+						style={{
+							fill: emailDetails.seen ? theme.palette.error.light : undefined,
+						}}
+					/>
+				</IconButton>
+				<IconButton onClick={handleDelete}>
+					<IconTrash size={18} stroke={1.3} />
+				</IconButton>
+			</Stack>
+
+			<Divider />
+
+			<Box p={3}>
+				<Stack direction='row' alignItems='center' spacing={2} mb={3}>
+					<Avatar
+						alt={emailDetails.from}
+						src={emailDetails.thumbnail || '/images/avatars/default.png'}
+						sx={{ width: 40, height: 40 }}
+					/>
+					<Box>
+						<Typography variant='h6'>{emailDetails.from}</Typography>
+						<Typography variant='body2'>Кому: {emailDetails.to}</Typography>
+					</Box>
+					<Chip
+						label={emailDetails.folder}
+						size='small'
+						sx={{ ml: 'auto', height: 21 }}
+						color={
+							emailDetails.folder === 'inbox'
+								? 'primary'
+								: emailDetails.folder === 'sent'
+								? 'success'
+								: emailDetails.folder === 'spam'
+								? 'error'
+								: 'warning'
+						}
+					/>
+				</Stack>
+
+				<Typography variant='h4' gutterBottom>
+					{emailDetails.subject}
+				</Typography>
+
+				<Box mb={3}>
+					<div
+						dangerouslySetInnerHTML={{
+							__html: emailDetails.html || emailDetails.text || '',
+						}}
+					/>
+				</Box>
+			</Box>
+
+			{attachments.length > 0 && (
+				<>
+					<Divider />
+					<Box p={3}>
+						<Typography variant='h6'>
+							Вложения ({attachments.length})
+						</Typography>
+						<Grid container spacing={3} mt={1}>
+							{attachments.map((attach: any) => (
+								<Grid size={4} key={attach.filename}>
+									<Stack direction='row' spacing={2} alignItems='center'>
+										<Avatar
+											variant='rounded'
+											sx={{
+												width: 48,
+												height: 48,
+												bgcolor: theme.palette.grey[100],
+											}}
+										>
+											<Avatar
+												src={`/api/inbox/${emailDetails.id}/attachments/${attach.filename}`}
+												alt='attachment'
+												variant='rounded'
+												sx={{ width: 24, height: 24 }}
+											/>
+										</Avatar>
+										<Box flex='1'>
+											<Typography variant='subtitle2' fontWeight={600}>
+												{attach.filename}
+											</Typography>
+											<Typography variant='body2'>
+												{(attach.size / 1024).toFixed(2)} KB
+											</Typography>
+										</Box>
+									</Stack>
+								</Grid>
+							))}
+						</Grid>
+					</Box>
+					<Divider />
+				</>
+			)}
+
+			<Box p={3}>
+				<Stack direction='row' spacing={2}>
+					<Button
+						variant='outlined'
+						size='small'
+						color='primary'
+						onClick={() => setShowReply(true)}
+					>
+						Ответить
+					</Button>
+					<Button variant='outlined' size='small' onClick={handleForward}>
+						Переслать
+					</Button>
+				</Stack>
+
+				{showReply && (
+					<Box mt={3}>
+						<Paper variant='outlined'>
+							<ReactQuill
+								value={replyText}
+								onChange={setReplyText}
+								placeholder='Напишите ответ...'
+							/>
+							<Box p={2} textAlign='right'>
+								<Button
+									onClick={handleReply}
+									color='primary'
+									variant='contained'
+								>
+									Отправить
+								</Button>
+							</Box>
+						</Paper>
+					</Box>
+				)}
+			</Box>
+		</Box>
+	)
+}

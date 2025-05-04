@@ -1,10 +1,11 @@
+// src/file-storage/file-storage.service.ts
+
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { FolderStorageService } from '../folder-storage/folder-storage.service';
-import * as path from 'path';
+import { randomUUID } from 'crypto';
 import * as fs from 'fs';
-import { Express } from 'express';
-import { randomUUID } from 'crypto'
+import * as path from 'path';
+import { FolderStorageService } from '../folder-storage/folder-storage.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class FileStorageService {
@@ -13,6 +14,48 @@ export class FileStorageService {
     private folderService: FolderStorageService,
   ) {}
 
+  async listFiles(userId: string, folderId?: string) {
+    console.log('listFiles called with:', {
+      userId,
+      folderId: folderId ?? 'null',
+    });
+    const normalizedFolderId =
+      folderId === '' || folderId === undefined ? null : folderId;
+    const files = await this.prisma.file.findMany({
+      where: { userId, folderId: normalizedFolderId },
+      orderBy: { createdAt: 'desc' },
+    });
+    const response = files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      path: f.path,
+      userId: f.userId,
+      folderId: f.folderId,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    console.log('listFiles response:', response);
+    return response;
+  }
+
+  async listAllFiles(userId: string) {
+    const files = await this.prisma.file.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    const response = files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      path: f.path,
+      userId: f.userId,
+      folderId: f.folderId,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    console.log('listAllFiles response:', response);
+    return response;
+  }
+
   async uploadFile(
     userId: string,
     file: Express.Multer.File,
@@ -20,48 +63,96 @@ export class FileStorageService {
     dealId?: string,
     folderId?: string,
   ) {
+    console.log('uploadFile called with:', {
+      userId,
+      originalname: file.originalname,
+      folderId,
+      accountId,
+      dealId,
+    });
+
+    // Перемещение из временной папки Multer
     let targetFolderId = folderId;
+    // (ваша логика работы с dealId/accountId...)
 
-    if (!folderId && dealId) {
-      const deal = await this.prisma.deal.findUnique({ where: { id: dealId }, include: { account: true } });
-      if (!deal) throw new Error('Сделка не найдена');
-
-      const accountFolder = await this.folderService.findOrCreateAccountFolder(
-        deal.accountId!,
-        deal.account!.name,
-        userId,
-      );
-
-      const dealFolder = await this.folderService.findOrCreateDealFolder(
-        dealId,
-        deal.title,
-        userId,
-        accountFolder.id,
-      );
-
-      targetFolderId = dealFolder.id;
-    }
-
-    const filePath = path.join('uploads', 'files', `${Date.now()}-${file.originalname}`);
+    const filePath = path.join(
+      'Uploads',
+      'files',
+      `${Date.now()}-${file.originalname}`,
+    );
     fs.renameSync(file.path, filePath);
 
-    return this.prisma.file.create({
+    // --- главное изменение: переконвертация имени из Latin1 в UTF-8 ---
+    let decodedName: string;
+    try {
+      decodedName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    } catch (err) {
+      console.warn(
+        `Failed to convert filename encoding: ${file.originalname}`,
+        err,
+      );
+      decodedName = file.originalname;
+    }
+
+    const createdFile = await this.prisma.file.create({
       data: {
-        name: file.originalname,
+        name: decodedName,
         path: filePath,
         size: file.size,
         mimeType: file.mimetype,
         folderId: targetFolderId,
         userId,
-        dealId,
+        dealId: dealId ?? null,
         contactId: null,
         taskId: null,
         access: 'private',
       },
     });
+
+    console.log('Uploaded file:', {
+      id: createdFile.id,
+      name: createdFile.name,
+      path: createdFile.path,
+    });
+    return createdFile;
   }
 
-	async downloadFile(fileId: string) {
+  async updateFile(
+    fileId: string,
+    userId: string,
+    data: { name?: string; folderId?: string },
+  ) {
+    const file = await this.prisma.file.findUnique({ where: { id: fileId } });
+    if (!file || file.userId !== userId) {
+      throw new NotFoundException('Нет доступа или файл не найден');
+    }
+
+    // --- тоже переконвертируем новое имя, если есть ---
+    let updatedName: string | undefined = data.name;
+    if (updatedName) {
+      try {
+        updatedName = Buffer.from(updatedName, 'latin1').toString('utf8');
+      } catch {
+        console.warn(`Failed to convert updated filename: ${data.name}`);
+      }
+    }
+
+    const updatedFile = await this.prisma.file.update({
+      where: { id: fileId },
+      data: {
+        name: updatedName,
+        folderId: data.folderId,
+      },
+    });
+
+    console.log('Updated file:', {
+      id: updatedFile.id,
+      name: updatedFile.name,
+    });
+    return updatedFile;
+  }
+
+  async downloadFile(fileId: string) {
     const file = await this.prisma.file.findUnique({ where: { id: fileId } });
     if (!file) throw new NotFoundException('Файл не найден');
     return file;
@@ -70,19 +161,18 @@ export class FileStorageService {
   async generatePublicLink(fileId: string, minutes = 60) {
     const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
     const publicLink = randomUUID();
-
-    return this.prisma.file.update({
+    const updatedFile = await this.prisma.file.update({
       where: { id: fileId },
-      data: {
-        publicLink,
-        access: 'public',
-        expiresAt,
-      },
+      data: { publicLink, access: 'public', expiresAt },
     });
+    console.log('Generated public link:', { id: fileId, publicLink });
+    return updatedFile;
   }
 
   async getByPublicLink(publicLink: string) {
-    const file = await this.prisma.file.findFirst({ where: { publicLink, access: 'public' } });
+    const file = await this.prisma.file.findFirst({
+      where: { publicLink, access: 'public' },
+    });
     if (!file || (file.expiresAt && new Date() > file.expiresAt)) {
       throw new NotFoundException('Ссылка недействительна или истекла');
     }
@@ -94,8 +184,11 @@ export class FileStorageService {
     if (!file || file.userId !== userId) {
       throw new NotFoundException('Нет доступа или файл не найден');
     }
-
-    fs.unlinkSync(file.path);
+    try {
+      fs.unlinkSync(file.path);
+    } catch (err) {
+      console.warn(`Failed to delete file from disk: ${file.path}`, err);
+    }
     return this.prisma.file.delete({ where: { id: fileId } });
   }
 }

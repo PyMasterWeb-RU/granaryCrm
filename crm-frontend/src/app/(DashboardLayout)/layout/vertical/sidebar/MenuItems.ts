@@ -44,7 +44,6 @@ import {
 	IconPoint,
 	IconRotate,
 	IconSettings,
-	IconShoppingCart,
 	IconStar,
 	IconTicket,
 	IconUserCircle,
@@ -207,6 +206,12 @@ const Menuitems: MenuitemsType[] = [
 	},
 	{
 		id: uniqueId(),
+		title: 'Files',
+		icon: IconMessage2,
+		href: '/apps/files/manager',
+	},
+	{
+		id: uniqueId(),
 		title: 'Blog',
 		icon: IconChartDonut3,
 		href: '/apps/blog/',
@@ -274,6 +279,25 @@ const Menuitems: MenuitemsType[] = [
 		title: 'Chats',
 		icon: IconMessage2,
 		href: '/apps/chats',
+	},
+	{
+		id: uniqueId(),
+		title: 'Settings',
+		icon: IconSettings,
+		children: [
+			{
+				id: uniqueId(),
+				title: 'Общие настройки',
+				icon: IconLayout,
+				href: '/settings/system',
+			},
+			{
+				id: uniqueId(),
+				title: 'Настройка полей',
+				icon: IconBoxMultiple,
+				href: '/settings/ui-config/deal',
+			},
+		],
 	},
 	{
 		id: uniqueId(),

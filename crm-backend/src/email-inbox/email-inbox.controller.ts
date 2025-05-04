@@ -1,8 +1,16 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
-import { EmailInboxService } from './email-inbox.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { createReadStream } from 'fs';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { EmailInboxService } from './email-inbox.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('inbox')
@@ -19,24 +27,33 @@ export class EmailInboxController {
     return this.inboxService.getByFolder(user.userId, folder);
   }
 
-	@Get(':id/attachments/:filename')
-	async download(@Param('id') id: string, @Param('filename') filename: string) {
-		return this.inboxService.getAttachment(id, filename);
-	}
+  @Get(':id/attachments/:filename')
+  async downloadAttachment(
+    @Param('id') id: string,
+    @Param('filename') filename: string,
+    @Res() res,
+  ) {
+    const file = await this.inboxService.getAttachment(id, filename);
+    const stream = createReadStream(file.path);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${file.filename}"`,
+    );
+    res.setHeader('Content-Type', file.contentType);
+    stream.pipe(res);
+  }
 
-	@Get(':id/attachments/:filename')
-	async downloadAttachment(@Param('id') id: string, @Param('filename') filename: string, @Res() res) {
-		const message = await this.inboxService.getById(id);
-		const file = (message.attachments as any[]).find(f => f.filename === filename);
-		if (!file) throw new Error('Файл не найден');
+  @Get('search/:q')
+  async search(@CurrentUser() user: any, @Param('q') q: string) {
+    return this.inboxService.search(user.userId, q);
+  }
 
-		const stream = createReadStream(file.path);
-		res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
-		stream.pipe(res);
-	}
-
-	@Get('search/:q')
-	async search(@CurrentUser() user: any, @Param('q') q: string) {
-		return this.inboxService.search(user.userId, q);
-	}
+  @Patch(':id')
+  async updateStatus(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: { seen?: boolean; flagged?: boolean; folder?: string },
+  ) {
+    return this.inboxService.updateStatus(user.userId, id, body);
+  }
 }

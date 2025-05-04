@@ -1,13 +1,15 @@
+// src/app/layout.tsx
 'use client'
-import { useSelector } from '@/store/hooks'
-import { AppState } from '@/store/store'
+
+import { fetchCurrentUser } from '@/store/apps/auth/AuthSlice'
+import { useDispatch } from '@/store/hooks'
+import Head from 'next/head'
+import { ReactNode, useEffect } from 'react'
+
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { styled, useTheme } from '@mui/material/styles'
-import Head from 'next/head'
-import React, { useState } from 'react'
-import HorizontalHeader from './layout/horizontal/header/Header'
-import Navigation from './layout/horizontal/navbar/Navigation'
+
 import Customizer from './layout/shared/customizer/Customizer'
 import Header from './layout/vertical/header/Header'
 import Sidebar from './layout/vertical/sidebar/Sidebar'
@@ -28,53 +30,37 @@ const PageWrapper = styled('div')(() => ({
 	backgroundColor: 'transparent',
 }))
 
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode
-}) {
-	const [isSidebarOpen, setSidebarOpen] = useState(true)
-	const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-	const customizer = useSelector((state: AppState) => state.customizer)
+export default function RootLayout({ children }: { children: ReactNode }) {
+	const dispatch = useDispatch()
 	const theme = useTheme()
+
+	useEffect(() => {
+		dispatch(fetchCurrentUser())
+	}, [dispatch])
 
 	return (
 		<>
 			<Head>
 				<title>Modernize NextJs</title>
 			</Head>
-			<MainWrapper
-				className={
-					customizer.activeMode === 'dark'
-						? 'darkbg mainwrapper'
-						: 'mainwrapper'
-				}
-			>
-				{/* Sidebar */}
-				{!customizer.isHorizontal && <Sidebar />}
+			<MainWrapper>
+				<Sidebar />
 
-				{/* Main Wrapper */}
 				<PageWrapper
 					className='page-wrapper'
 					sx={{
-						...(customizer.isCollapse && {
-							[theme.breakpoints.up('lg')]: {
-								ml: `${customizer.MiniSidebarWidth}px`,
-							},
-						}),
+						// пример: отступ слева для экранов ≥lg
+						[theme.breakpoints.up('lg')]: {
+							ml: '80px',
+						},
 					}}
 				>
-					{/* Header */}
-					{customizer.isHorizontal ? <HorizontalHeader /> : <Header />}
-
-					{/* Navigation (if horizontal) */}
-					{customizer.isHorizontal && <Navigation />}
+					<Header />
 
 					<Container
 						sx={{
 							pt: '30px',
-							maxWidth:
-								customizer.isLayout === 'boxed' ? 'lg' : '100%!important',
+							maxWidth: '100%!important',
 						}}
 					>
 						<Box sx={{ minHeight: 'calc(100vh - 170px)' }}>{children}</Box>

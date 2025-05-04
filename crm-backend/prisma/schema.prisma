@@ -259,16 +259,18 @@ model GeneratedDocument {
 }
 
 model FileFolder {
-  id        String   @id @default(uuid())
-  name      String
-  parentId  String? // null = корень
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  access    String // private | shared | public
-  createdAt DateTime @default(now())
-  files     File[]   @relation("FolderFiles")
-  accountId String? // Связь с клиентом
-  dealId    String? // Связь с конкретной сделкой
+  id         String    @id @default(uuid())
+  name       String
+  parentId   String? // null = корень
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  access     String // private | shared | public
+  createdAt  DateTime  @default(now())
+  files      File[]    @relation("FolderFiles")
+  publicLink String? // Add for sharing
+  expiresAt  DateTime? // Add for sharing
+  accountId  String? // Связь с клиентом
+  dealId     String? // Связь с конкретной сделкой
 }
 
 model File {

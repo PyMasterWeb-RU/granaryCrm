@@ -1,10 +1,9 @@
-import CodeDialog from "@/app/components/shared/CodeDialog";
-import React from "react";
+import CodeDialog from '@/app/components/shared/CodeDialog'
 const UpcomingActivityCode = () => {
-    return (
-        <>
-            <CodeDialog>
-                {`
+	return (
+		<>
+			<CodeDialog>
+				{`
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Stack, Typography, Avatar, Box, Card, CardContent } from '@mui/material';
@@ -188,9 +187,9 @@ const UpcomingActivity = () => {
 
 export default UpcomingActivity;
 `}
-            </CodeDialog>
-        </>
-    );
-};
+			</CodeDialog>
+		</>
+	)
+}
 
-export default UpcomingActivityCode;
+export default UpcomingActivityCode
