@@ -1,5 +1,3 @@
-// src/file-storage/file-storage.service.ts
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
@@ -38,6 +36,25 @@ export class FileStorageService {
     return response;
   }
 
+  async listFilesByDealId(userId: string, dealId: string) {
+    console.log('listFilesByDealId called with:', { userId, dealId });
+    const files = await this.prisma.file.findMany({
+      where: { userId, dealId },
+      orderBy: { createdAt: 'desc' },
+    });
+    const response = files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      path: f.path,
+      userId: f.userId,
+      folderId: f.folderId,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    console.log('listFilesByDealId response:', response);
+    return response;
+  }
+
   async listAllFiles(userId: string) {
     const files = await this.prisma.file.findMany({
       where: { userId },
@@ -71,9 +88,42 @@ export class FileStorageService {
       dealId,
     });
 
-    // Перемещение из временной папки Multer
+    // Автоматически определяем folderId для dealId или accountId
     let targetFolderId = folderId;
-    // (ваша логика работы с dealId/accountId...)
+    if (dealId && accountId) {
+      // Получаем реальное имя компании из базы
+      const account = await this.prisma.account.findUnique({
+        where: { id: accountId },
+      });
+      if (!account) {
+        throw new NotFoundException(`Компания с ID ${accountId} не найдена`);
+      }
+      const accountFolder = await this.folderService.findOrCreateAccountFolder(
+        accountId,
+        account.name, // Используем реальное имя компании
+        userId,
+      );
+      const dealFolder = await this.folderService.findOrCreateDealFolder(
+        dealId,
+        `Deal_${dealId}`,
+        userId,
+        accountFolder.id,
+      );
+      targetFolderId = dealFolder.id;
+    } else if (accountId) {
+      const account = await this.prisma.account.findUnique({
+        where: { id: accountId },
+      });
+      if (!account) {
+        throw new NotFoundException(`Компания с ID ${accountId} не найдена`);
+      }
+      const accountFolder = await this.folderService.findOrCreateAccountFolder(
+        accountId,
+        account.name, // Используем реальное имя компании
+        userId,
+      );
+      targetFolderId = accountFolder.id;
+    }
 
     const filePath = path.join(
       'Uploads',
@@ -82,7 +132,6 @@ export class FileStorageService {
     );
     fs.renameSync(file.path, filePath);
 
-    // --- главное изменение: переконвертация имени из Latin1 в UTF-8 ---
     let decodedName: string;
     try {
       decodedName = Buffer.from(file.originalname, 'latin1').toString('utf8');
@@ -127,7 +176,6 @@ export class FileStorageService {
       throw new NotFoundException('Нет доступа или файл не найден');
     }
 
-    // --- тоже переконвертируем новое имя, если есть ---
     let updatedName: string | undefined = data.name;
     if (updatedName) {
       try {

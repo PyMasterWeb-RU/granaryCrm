@@ -1,5 +1,6 @@
 'use client'
 
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import {
 	Avatar,
 	Box,
@@ -11,8 +12,7 @@ import {
 } from '@mui/material'
 import { IconBell } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
-import React from 'react'
+import React, { useState } from 'react'
 import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel'
 import CustomSwitch from '../../forms/theme-elements/CustomSwitch'
 import CustomTextField from '../../forms/theme-elements/CustomTextField'
@@ -24,7 +24,7 @@ interface NotificationSettings {
 }
 
 const fetchNotificationSettings = async () => {
-	const response = await axios.get('/api/users/me')
+	const response = await axiosWithAuth.get('/users/me')
 	return {
 		notificationsEnabled: response.data.notificationsEnabled,
 		email: response.data.email,
@@ -34,22 +34,33 @@ const fetchNotificationSettings = async () => {
 const updateNotificationSettings = async (
 	data: Partial<NotificationSettings>
 ) => {
-	const response = await axios.patch('/api/users/me', data)
+	const response = await axiosWithAuth.patch('/users/me', data)
 	return response.data
 }
 
 const NotificationTab = () => {
 	const queryClient = useQueryClient()
-	const { data: settings, isLoading } = useQuery({
+	const {
+		data: settings,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ['notificationSettings'],
 		queryFn: fetchNotificationSettings,
 	})
+	const [formError, setFormError] = useState<string | null>(null)
 
 	const mutation = useMutation({
 		mutationFn: updateNotificationSettings,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['notificationSettings'] })
-			alert('Настройки уведомлений сохранены!')
+			setFormError(null)
+		},
+		onError: (err: any) => {
+			setFormError(
+				'Не удалось сохранить настройки: ' +
+					(err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
@@ -59,10 +70,11 @@ const NotificationTab = () => {
 	}
 
 	if (isLoading) return <Typography>Загрузка...</Typography>
+	if (error) return <Typography>Ошибка загрузки настроек</Typography>
 
 	return (
 		<Grid container spacing={3} justifyContent='center'>
-			<Grid item xs={12} lg={9}>
+			<Grid size={{ xs: 12, lg: 9 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h4' mb={2}>
@@ -71,7 +83,11 @@ const NotificationTab = () => {
 						<Typography color='textSecondary' mb={3}>
 							Manage your notification settings.
 						</Typography>
-
+						{formError && (
+							<Typography color='error' mb={2}>
+								{formError}
+							</Typography>
+						)}
 						<CustomFormLabel htmlFor='email'>Email Address</CustomFormLabel>
 						<CustomTextField
 							id='email'
@@ -83,7 +99,6 @@ const NotificationTab = () => {
 						<Typography color='textSecondary' mb={3}>
 							Used for notifications.
 						</Typography>
-
 						<Stack direction='row' spacing={2} mt={4}>
 							<Avatar
 								variant='rounded'
@@ -116,7 +131,6 @@ const NotificationTab = () => {
 					</CardContent>
 				</BlankCard>
 			</Grid>
-
 			<Stack direction='row' spacing={2} sx={{ justifyContent: 'end' }} mt={3}>
 				<Button size='large' variant='contained' color='primary' disabled>
 					Save

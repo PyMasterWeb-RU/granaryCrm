@@ -1,7 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import * as bcrypt from 'bcrypt';
-import { Response } from 'express'; // для работы с куками
+import { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 
@@ -15,21 +20,46 @@ export class AuthService {
   async register(dto: RegisterDto, res: Response) {
     const hashed = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashed,
-        name: dto.name,
-        role: {
-          connectOrCreate: {
-            where: { name: 'user' },
-            create: { name: 'user' },
+    let user;
+    try {
+      user = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          password: hashed,
+          name: dto.name,
+          role: {
+            connectOrCreate: {
+              where: { name: 'user' },
+              create: { name: 'user' },
+            },
           },
         },
-      },
-    });
+      });
+    } catch (e: any) {
+      if (
+        e instanceof PrismaClientKnownRequestError &&
+        e.code === 'P2002' &&
+        (e.meta?.target as string[]).includes('email')
+      ) {
+        throw new ConflictException(
+          'Пользователь с таким email уже существует',
+        );
+      }
+      throw e;
+    }
 
     const token = this.jwt.sign({ sub: user.id });
+
+    // Создаем сессию
+    await this.prisma.session.create({
+      data: {
+        userId: user.id,
+        deviceName: res.req.headers['user-agent'] || 'Unknown Device',
+        lastSeen: new Date(),
+        location: 'Unknown Location', // Можно заменить на геолокацию
+        token,
+      },
+    });
 
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -52,6 +82,17 @@ export class AuthService {
     if (!match) throw new UnauthorizedException('Неверный пароль');
 
     const token = this.jwt.sign({ sub: user.id });
+
+    // Создаем сессию
+    await this.prisma.session.create({
+      data: {
+        userId: user.id,
+        deviceName: res.req.headers['user-agent'] || 'Unknown Device',
+        lastSeen: new Date(),
+        location: 'Unknown Location', // Можно заменить на геолокацию
+        token,
+      },
+    });
 
     res.cookie('access_token', token, {
       httpOnly: true,

@@ -1,8 +1,8 @@
 'use client'
 
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import { Button, CardContent, Grid, Stack, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel'
 import CustomTextField from '../../forms/theme-elements/CustomTextField'
@@ -21,22 +21,25 @@ interface Company {
 }
 
 const fetchCompany = async () => {
-	const response = await axios.get('/api/accounts/my')
+	const response = await axiosWithAuth.get('/accounts/my')
 	return response.data
 }
 
 const updateCompany = async (data: Partial<Company>) => {
-	const response = await axios.patch('/api/accounts/my', data)
+	const response = await axiosWithAuth.patch('/accounts/my', data)
 	return response.data
 }
 
 const BillsTab = () => {
 	const queryClient = useQueryClient()
-	const { data: company, isLoading } = useQuery({
+	const {
+		data: company,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ['company'],
 		queryFn: fetchCompany,
 	})
-
 	const [formData, setFormData] = useState({
 		name: '',
 		industry: '',
@@ -47,6 +50,7 @@ const BillsTab = () => {
 		kpp: '',
 		ogrn: '',
 	})
+	const [formError, setFormError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (company) {
@@ -67,7 +71,13 @@ const BillsTab = () => {
 		mutationFn: updateCompany,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['company'] })
-			alert('Данные компании сохранены!')
+			setFormError(null)
+		},
+		onError: (err: any) => {
+			setFormError(
+				'Не удалось сохранить данные компании: ' +
+					(err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
@@ -81,10 +91,11 @@ const BillsTab = () => {
 	}
 
 	if (isLoading) return <Typography>Загрузка...</Typography>
+	if (error) return <Typography>Ошибка загрузки данных компании</Typography>
 
 	return (
 		<Grid container spacing={3} justifyContent='center'>
-			<Grid item xs={12} lg={9}>
+			<Grid size={{ xs: 12, lg: 9 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h4' mb={2}>
@@ -93,9 +104,14 @@ const BillsTab = () => {
 						<Typography color='textSecondary' mb={3}>
 							Update your company details here.
 						</Typography>
+						{formError && (
+							<Typography color='error' mb={2}>
+								{formError}
+							</Typography>
+						)}
 						<form onSubmit={handleSubmit}>
 							<Grid container spacing={3}>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='name'>
 										Company Name*
 									</CustomFormLabel>
@@ -109,7 +125,7 @@ const BillsTab = () => {
 										required
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='industry'>
 										Industry
 									</CustomFormLabel>
@@ -122,7 +138,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='phone'>
 										Phone
 									</CustomFormLabel>
@@ -135,7 +151,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='email'>
 										Email
 									</CustomFormLabel>
@@ -148,7 +164,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='address'>
 										Address
 									</CustomFormLabel>
@@ -161,7 +177,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='inn'>
 										INN
 									</CustomFormLabel>
@@ -174,7 +190,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='kpp'>
 										KPP
 									</CustomFormLabel>
@@ -187,7 +203,7 @@ const BillsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='ogrn'>
 										OGRN
 									</CustomFormLabel>

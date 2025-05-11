@@ -26,7 +26,6 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { FileStorageService } from './file-storage.service';
 
-// Interceptor to set Content-Type with UTF-8 charset
 @Injectable()
 export class Utf8JsonInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -43,16 +42,22 @@ export class FileStorageController {
 
   @Get()
   @UseInterceptors(Utf8JsonInterceptor)
-  async list(@CurrentUser() user, @Query('folderId') folderId?: string) {
-    console.log('GET /files called with user:', {
+  async list(
+    @CurrentUser() user,
+    @Query('folderId') folderId?: string,
+    @Query('dealId') dealId?: string,
+  ) {
+    console.log('GET /files called with:', {
       userId: user.userId,
-      jwtPayload: user,
+      folderId: folderId ?? 'null',
+      dealId: dealId ?? 'null',
     });
-    // Normalize empty string to undefined
+    if (dealId) {
+      const files = await this.service.listFilesByDealId(user.userId, dealId);
+      return files;
+    }
     const normalizedFolderId = folderId === '' ? undefined : folderId;
     const files = await this.service.listFiles(user.userId, normalizedFolderId);
-
-    // Explicitly map to ensure UTF-8 names
     const response = files.map((f) => ({
       id: f.id,
       name: f.name,
@@ -61,9 +66,7 @@ export class FileStorageController {
       size: f.size,
       mimeType: f.mimeType,
     }));
-
     console.log('GET /files response:', response);
-
     return response;
   }
 
@@ -72,8 +75,6 @@ export class FileStorageController {
   async listAll(@CurrentUser() user) {
     console.log('GET /files/all called with userId:', user.userId);
     const files = await this.service.listAllFiles(user.userId);
-
-    // Explicitly map to ensure UTF-8 names
     const response = files.map((f) => ({
       id: f.id,
       name: f.name,
@@ -82,20 +83,16 @@ export class FileStorageController {
       size: f.size,
       mimeType: f.mimeType,
     }));
-
     console.log('GET /files/all response:', response);
-
     return response;
   }
 
   @Post('upload')
   @UseInterceptors(
     FilesInterceptor('file', 10, {
-      // Allow up to 10 files
       storage: diskStorage({
         destination: './Uploads/files',
         filename: (req, file, cb) => {
-          // Ensure filename is decoded properly
           const decodedName = decodeURIComponent(file.originalname);
           cb(null, `${Date.now()}-${decodedName}`);
         },
@@ -185,11 +182,11 @@ export class FileStorageController {
       'id:',
       id,
     );
-    const file = await this.service.downloadFile(id); // Reusing downloadFile to fetch file
+    const file = await this.service.downloadFile(id);
     if (!file || file.userId !== user.userId) {
       throw new NotFoundException('Нет доступа или файл не найден');
     }
-    const result = await this.service.generatePublicLink(id, 60); // Публичная ссылка на 1 час
+    const result = await this.service.generatePublicLink(id, 60);
     console.log('POST /files/share/:id response:', {
       id,
       publicLink: result.publicLink,

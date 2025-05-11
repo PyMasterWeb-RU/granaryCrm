@@ -1,5 +1,7 @@
-import { fetchChats, SearchChat, SelectChat } from '@/store/apps/chat/ChatSlice'
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import { useDispatch, useSelector } from '@/store/hooks'
+import { Chat } from '@/types/chat'
+import { CircularProgress, ListItemAvatar } from '@mui/material'
 import Alert from '@mui/material/Alert'
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
@@ -7,7 +9,6 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import InputAdornment from '@mui/material/InputAdornment'
 import List from '@mui/material/List'
-import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
@@ -16,109 +17,129 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { IconChevronDown, IconSearch } from '@tabler/icons-react'
 import { formatDistanceToNowStrict } from 'date-fns'
-import { last } from 'lodash'
-import React, { useEffect } from 'react'
-import { ChatsType } from '../../../(DashboardLayout)/types/apps/chat'
+import React, { useEffect, useState } from 'react'
 import Scrollbar from '../../custom-scroll/Scrollbar'
 
-const ChatListing = () => {
+interface ChatListingProps {
+	dealId?: string
+	accountId?: string
+}
+
+const ChatListing: React.FC<ChatListingProps> = ({ dealId, accountId }) => {
 	const dispatch = useDispatch()
-	const activeChat = useSelector(state => state.chatReducer.chatContent)
+	const [chats, setChats] = useState<Chat[]>([])
+	const [search, setSearch] = useState('')
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+	const open = Boolean(anchorEl)
 
 	useEffect(() => {
-		dispatch(fetchChats())
-	}, [dispatch])
-
-	const filterChats = (chats: ChatsType[], cSearch: string) => {
-		if (chats)
-			return chats.filter(t =>
-				t.name.toLocaleLowerCase().includes(cSearch.toLocaleLowerCase())
-			)
-
-		return chats
-	}
-
-	const chats = useSelector(state =>
-		filterChats(state.chatReducer.chats, state.chatReducer.chatSearch)
-	)
-
-	const getDetails = (conversation: ChatsType) => {
-		let displayText = ''
-
-		const lastMessage = conversation.messages[conversation.messages.length - 1]
-		if (lastMessage) {
-			const sender = lastMessage.senderId === conversation.id ? 'You: ' : ''
-			const message =
-				lastMessage.type === 'image' ? 'Sent a photo' : lastMessage.msg
-			displayText = `${sender}${message}`
+		const fetchChats = async () => {
+			setLoading(true)
+			try {
+				const params = new URLSearchParams()
+				if (dealId) params.append('dealId', dealId)
+				if (accountId) params.append('accountId', accountId)
+				console.log('Fetching chats with params:', {
+					dealId,
+					accountId,
+					url: `/chats?${params.toString()}`,
+				})
+				const res = await axiosWithAuth.get(`/chats?${params.toString()}`)
+				setChats(res.data)
+				dispatch({ type: 'fetchChats', payload: res.data })
+				setError(null)
+			} catch (err: any) {
+				const errorMessage =
+					err.response?.status === 404
+						? 'Эндпоинт чатов не найден. Проверьте конфигурацию бэкенда.'
+						: 'Не удалось загрузить чаты. Попробуйте позже.'
+				setError(errorMessage)
+				console.error('Ошибка загрузки чатов:', {
+					message: err.message,
+					status: err.response?.status,
+					data: err.response?.data,
+				})
+			} finally {
+				setLoading(false)
+			}
 		}
+		fetchChats()
+	}, [dealId, accountId, dispatch])
 
-		return displayText
+	const filterChats = (chats: Chat[], search: string) => {
+		if (!search) return chats
+		return chats.filter(chat =>
+			(chat.name || chat.participants.map(p => p.user.name).join(', '))
+				.toLowerCase()
+				.includes(search.toLowerCase())
+		)
 	}
 
-	const lastActivity = (chat: ChatsType) => last(chat.messages)?.createdAt
+	const filteredChats = filterChats(chats, search)
 
-	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-	const open = Boolean(anchorEl)
+	const getDetails = (chat: Chat) => {
+		const lastMessage = chat.messages[0]
+		if (lastMessage) {
+			return lastMessage.content.length > 50
+				? lastMessage.content.substring(0, 50) + '...'
+				: lastMessage.content
+		}
+		return 'Нет сообщений'
+	}
+
+	const lastActivity = (chat: Chat) => chat.messages[0]?.createdAt
+
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setAnchorEl(event.currentTarget)
 	}
+
 	const handleClose = () => {
 		setAnchorEl(null)
 	}
 
 	return (
-		<div>
-			{/* ------------------------------------------- */}
-			{/* Profile */}
-			{/* ------------------------------------------- */}
-			<Box display={'flex'} alignItems='center' gap='10px' p={3}>
+		<Box>
+			<Box display='flex' alignItems='center' gap='10px' p={3}>
 				<Badge
 					variant='dot'
-					anchorOrigin={{
-						vertical: 'bottom',
-						horizontal: 'right',
-					}}
+					anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
 					overlap='circular'
 					color='success'
 				>
 					<Avatar
-						alt='Remy Sharp'
+						alt='User'
 						src='/images/profile/user-1.jpg'
 						sx={{ width: 54, height: 54 }}
 					/>
 				</Badge>
 				<Box>
 					<Typography variant='body1' fontWeight={600}>
-						Mathew Anderson
+						Current User
 					</Typography>
-					<Typography variant='body2'>Designer</Typography>
+					<Typography variant='body2'>Online</Typography>
 				</Box>
 			</Box>
-			{/* ------------------------------------------- */}
-			{/* Search */}
-			{/* ------------------------------------------- */}
 			<Box px={3} py={1}>
 				<TextField
 					id='outlined-search'
-					placeholder='Search contacts'
+					placeholder='Поиск чатов'
 					size='small'
 					type='search'
 					variant='outlined'
 					InputProps={{
 						endAdornment: (
 							<InputAdornment position='end'>
-								<IconSearch size={'16'} />
+								<IconSearch size='16' />
 							</InputAdornment>
 						),
 					}}
 					fullWidth
-					onChange={e => dispatch(SearchChat(e.target.value))}
+					value={search}
+					onChange={e => setSearch(e.target.value)}
 				/>
 			</Box>
-			{/* ------------------------------------------- */}
-			{/* Contact List */}
-			{/* ------------------------------------------- */}
 			<List sx={{ px: 0 }}>
 				<Box px={2.5} pb={1}>
 					<Button
@@ -129,20 +150,22 @@ const ChatListing = () => {
 						onClick={handleClick}
 						color='inherit'
 					>
-						Recent Chats <IconChevronDown size='16' />
+						Недавние чаты <IconChevronDown size='16' />
 					</Button>
 					<Menu
 						id='basic-menu'
 						anchorEl={anchorEl}
 						open={open}
 						onClose={handleClose}
-						MenuListProps={{
-							'aria-labelledby': 'basic-button',
-						}}
+						MenuListProps={{ 'aria-labelledby': 'basic-button' }}
 					>
-						<MenuItem onClick={handleClose}>Sort By Time</MenuItem>
-						<MenuItem onClick={handleClose}>Sort By Unread</MenuItem>
-						<MenuItem onClick={handleClose}>Mark as all Read</MenuItem>
+						<MenuItem onClick={handleClose}>Сортировать по времени</MenuItem>
+						<MenuItem onClick={handleClose}>
+							Сортировать по непрочитанным
+						</MenuItem>
+						<MenuItem onClick={handleClose}>
+							Отметить все как прочитанные
+						</MenuItem>
 					</Menu>
 				</Box>
 				<Scrollbar
@@ -151,40 +174,42 @@ const ChatListing = () => {
 						maxHeight: '600px',
 					}}
 				>
-					{chats && chats.length ? (
-						chats.map(chat => (
+					{loading ? (
+						<Box sx={{ textAlign: 'center', py: 4 }}>
+							<CircularProgress />
+						</Box>
+					) : error ? (
+						<Box m={2}>
+							<Alert severity='error' variant='filled' sx={{ color: 'white' }}>
+								{error}
+							</Alert>
+						</Box>
+					) : filteredChats.length ? (
+						filteredChats.map(chat => (
 							<ListItemButton
 								key={chat.id}
-								onClick={() => dispatch(SelectChat(chat.id))}
-								sx={{
-									mb: 0.5,
-									py: 2,
-									px: 3,
-									alignItems: 'start',
-								}}
-								selected={activeChat === chat.id}
+								onClick={() =>
+									dispatch({ type: 'SelectChat', payload: chat.id })
+								}
+								sx={{ mb: 0.5, py: 2, px: 3, alignItems: 'start' }}
+								selected={
+									useSelector(state => state.chatReducer.chatContent) ===
+									chat.id
+								}
 							>
 								<ListItemAvatar>
 									<Badge
-										color={
-											chat.status === 'online'
-												? 'success'
-												: chat.status === 'busy'
-												? 'error'
-												: chat.status === 'away'
-												? 'warning'
-												: 'secondary'
-										}
+										color='success'
 										variant='dot'
-										anchorOrigin={{
-											vertical: 'bottom',
-											horizontal: 'right',
-										}}
+										anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
 										overlap='circular'
 									>
 										<Avatar
-											alt='Remy Sharp'
-											src={chat.thumb}
+											alt={chat.name || chat.participants[0]?.user.name}
+											src={
+												chat.participants[0]?.user.avatar ||
+												'/images/profile/user-1.jpg'
+											}
 											sx={{ width: 42, height: 42 }}
 										/>
 									</Badge>
@@ -192,34 +217,58 @@ const ChatListing = () => {
 								<ListItemText
 									primary={
 										<Typography variant='subtitle2' fontWeight={600} mb={0.5}>
-											{chat.name}
+											{chat.name ||
+												chat.participants.map(p => p.user.name).join(', ')}
 										</Typography>
 									}
-									secondary={getDetails(chat)}
-									secondaryTypographyProps={{
-										noWrap: true,
-									}}
+									secondary={
+										<>
+											{getDetails(chat)}
+											{chat.deal && (
+												<Typography
+													component='span'
+													variant='caption'
+													sx={{ display: 'block' }}
+												>
+													Сделка: {chat.deal.title}
+												</Typography>
+											)}
+											{chat.account && (
+												<Typography
+													component='span'
+													variant='caption'
+													sx={{ display: 'block' }}
+												>
+													Компания: {chat.account.name}
+												</Typography>
+											)}
+										</>
+									}
+									secondaryTypographyProps={{ noWrap: true }}
 									sx={{ my: 0 }}
 								/>
-								<Box sx={{ flexShrink: '0' }} mt={0.5}>
+								<Box sx={{ flexShrink: 0 }} mt={0.5}>
 									<Typography variant='body2'>
-										{formatDistanceToNowStrict(new Date(lastActivity(chat)), {
-											addSuffix: false,
-										})}
+										{lastActivity(chat)
+											? formatDistanceToNowStrict(
+													new Date(lastActivity(chat)),
+													{ addSuffix: false }
+											  )
+											: ''}
 									</Typography>
 								</Box>
 							</ListItemButton>
 						))
 					) : (
 						<Box m={2}>
-							<Alert severity='error' variant='filled' sx={{ color: 'white' }}>
-								No Contacts Found!
+							<Alert severity='info' variant='filled' sx={{ color: 'white' }}>
+								Чаты не найдены
 							</Alert>
 						</Box>
 					)}
 				</Scrollbar>
 			</List>
-		</div>
+		</Box>
 	)
 }
 

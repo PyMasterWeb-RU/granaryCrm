@@ -1,36 +1,37 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import ChatSidebar from "@/app/components/apps/chats/ChatSidebar";
-import ChatContent from "@/app/components/apps/chats/ChatContent";
-import ChatMsgSent from "@/app/components/apps/chats/ChatMsgSent";
+import Box from '@mui/material/Box'
+import Divider from '@mui/material/Divider'
+import React, { useState } from 'react'
+import ChatContent from './ChatContent'
+import ChatMsgSent from './ChatMsgSent'
+import ChatSidebar from './ChatSidebar'
 
-const ChatsApp = () => {
-  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+interface ChatsAppProps {
+	dealId?: string
+	accountId?: string
+}
 
-  return (
-    <>
-      {/* ------------------------------------------- */}
-      {/* Left part */}
-      {/* ------------------------------------------- */}
+const ChatsApp: React.FC<ChatsAppProps> = ({ dealId, accountId }) => {
+	const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
-      <ChatSidebar
-        isMobileSidebarOpen={isMobileSidebarOpen}
-        onSidebarClose={() => setMobileSidebarOpen(false)}
-      />
-      {/* ------------------------------------------- */}
-      {/* Right part */}
-      {/* ------------------------------------------- */}
+	return (
+		<>
+			{/* Left part */}
+			<ChatSidebar
+				isMobileSidebarOpen={isMobileSidebarOpen}
+				onSidebarClose={() => setMobileSidebarOpen(false)}
+				dealId={dealId}
+				accountId={accountId}
+			/>
+			{/* Right part */}
+			<Box flexGrow={1}>
+				<ChatContent toggleChatSidebar={() => setMobileSidebarOpen(true)} />
+				<Divider />
+				<ChatMsgSent />
+			</Box>
+		</>
+	)
+}
 
-      <Box flexGrow={1}>
-        <ChatContent toggleChatSidebar={() => setMobileSidebarOpen(true)} />
-        <Divider />
-        <ChatMsgSent />
-      </Box>
-    </>
-  );
-};
-
-export default ChatsApp;
+export default ChatsApp

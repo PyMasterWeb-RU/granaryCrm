@@ -22,39 +22,29 @@ model User {
   team   Team?   @relation(fields: [teamId], references: [id])
   teamId String?
 
-  Account Account[]
-
-  Contact Contact[]
-
-  Deal Deal[]
-
-  Activity Activity[]
-
-  EmailAccount EmailAccount[]
-
-  EmailTemplate EmailTemplate[]
-
-  EmailMessage EmailMessage[]
-
+  Account           Account[]
+  Contact           Contact[]
+  Deal              Deal[]
+  Activity          Activity[]
+  EmailAccount      EmailAccount[]
+  EmailTemplate     EmailTemplate[]
+  EmailMessage      EmailMessage[]
   EmailInboxMessage EmailInboxMessage[]
-
-  EmailContact EmailContact[]
-
-  DocumentTemplate DocumentTemplate[]
-
+  EmailContact      EmailContact[]
+  DocumentTemplate  DocumentTemplate[]
   GeneratedDocument GeneratedDocument[]
+  FileFolder        FileFolder[]
+  File              File[]
+  SharedAccess      SharedAccess[]
+  AuditLog          AuditLog[]
+  Comment           Comment[]
+  Notification      Notification[]
+  ChatParticipant   ChatParticipant[] // Участие в чатах
+  Message           Message[] // Сообщения, отправленные пользователем
 
-  FileFolder FileFolder[]
+  Chat Chat[]
 
-  File File[]
-
-  SharedAccess SharedAccess[]
-
-  AuditLog AuditLog[]
-
-  Comment Comment[]
-
-  Notification Notification[]
+  Session Session[]
 }
 
 model Role {
@@ -84,11 +74,10 @@ model Account {
   ownerId   String
   createdAt DateTime @default(now())
 
-  Contact Contact[]
-
-  Deal Deal[]
-
+  Contact  Contact[]
+  Deal     Deal[]
   Activity Activity[]
+  Chat     Chat[] // Чаты, связанные с компанией
 }
 
 model Contact {
@@ -104,31 +93,37 @@ model Contact {
   accountId String?
   createdAt DateTime @default(now())
 
-  Deal Deal[]
-
-  Activity Activity[]
-
+  Deal       Deal[]
+  Activity   Activity[]
   ContactTag ContactTag[]
 }
 
 model Deal {
-  id          String   @id @default(uuid())
-  title       String
-  amount      Float
-  stage       String
-  probability Int
-  closeDate   DateTime
-  account     Account? @relation(fields: [accountId], references: [id])
-  accountId   String?
-  contact     Contact? @relation(fields: [contactId], references: [id])
-  contactId   String?
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid())
+  title        String
+  amount       Float
+  stage        String
+  probability  Int
+  closeDate    DateTime
+  dealType     String? // Закупка или Реализация
+  nomenclature String? // Номенклатура (товар)
+  packaging    String? // Фасовка
+  deliveryType String? // Вид доставки
+  transport    String? // Транспорт
+  currency     String? // Валюта
+  price        Float? // Цена
+  cbRate       Float? // Курс ЦБ на дату
+  account      Account? @relation(fields: [accountId], references: [id])
+  accountId    String?
+  contact      Contact? @relation(fields: [contactId], references: [id])
+  contactId    String?
+  owner        User     @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  createdAt    DateTime @default(now())
 
   Activity Activity[]
-
-  DealTag DealTag[]
+  DealTag  DealTag[]
+  Chat     Chat[] // Чаты, связанные со сделкой
 }
 
 model Activity {
@@ -167,13 +162,16 @@ model Activity {
 
 model EmailAccount {
   id         String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [id])
   userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  email      String
   smtpHost   String
   smtpPort   Int
   smtpSecure Boolean
-  email      String
-  password   String // хранится в зашифрованном виде или просто base64
+  imapHost   String?
+  imapPort   Int?
+  imapSecure Boolean?
+  password   String? // хранится в зашифрованном виде или просто base64
   createdAt  DateTime @default(now())
 }
 
@@ -292,7 +290,55 @@ model File {
   createdAt  DateTime    @default(now())
 
   commentId String? // 👈 связь с комментарием
-  comment   Comment? @relation("CommentFiles", fields: [commentId], references: [id])
+  comment   Comment?  @relation("CommentFiles", fields: [commentId], references: [id])
+  Message   Message[] // Файлы, прикрепленные к сообщениям в чате
+}
+
+model Chat {
+  id           String            @id @default(uuid())
+  type         String // private | group | broadcast
+  name         String? // Название для групповых чатов или рассылок
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  creator      User              @relation(fields: [creatorId], references: [id])
+  creatorId    String
+  participants ChatParticipant[] // Участники чата
+  messages     Message[] // Сообщения в чате
+  isBroadcast  Boolean           @default(false) // Флаг для рассылок
+  deal         Deal?             @relation(fields: [dealId], references: [id])
+  dealId       String? // Связь со сделкой
+  account      Account?          @relation(fields: [accountId], references: [id])
+  accountId    String? // Связь с компанией
+}
+
+model ChatParticipant {
+  id        String    @id @default(uuid())
+  chat      Chat      @relation(fields: [chatId], references: [id])
+  chatId    String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime? // Время ухода из чата (если покинул)
+  createdAt DateTime  @default(now())
+
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id        String    @id @default(uuid())
+  chat      Chat      @relation(fields: [chatId], references: [id])
+  chatId    String
+  sender    User      @relation(fields: [senderId], references: [id])
+  senderId  String
+  content   String // Текст сообщения
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isRead    Boolean   @default(false) // Прочитано ли сообщение
+  files     File[] // Прикрепленные файлы
+  readBy    String[]  @default([]) // Список userId, прочитавших сообщение
+  replyTo   Message?  @relation("Replies", fields: [replyToId], references: [id])
+  replyToId String? // ID цитируемого сообщения
+  replies   Message[] @relation("Replies") // Сообщения, цитирующие это сообщение
 }
 
 model SettingOption {
@@ -448,4 +494,16 @@ model UiFieldConfig {
   createdAt DateTime @default(now())
 
   @@unique([entity, name])
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  deviceName String
+  lastSeen   DateTime
+  location   String?
+  token      String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
 }

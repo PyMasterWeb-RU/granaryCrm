@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { AuditLogModule } from './audit-log/audit-log.module';
 import { AuthModule } from './auth/auth.module';
 import { AutomationModule } from './automation/automation.module';
+import { ChatsModule } from './chats/chats.module';
 import { CommentsModule } from './comments/comments.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
@@ -36,9 +37,9 @@ import { SettingsModule } from './settings/settings.module';
 import { TagsModule } from './tags/tags.module';
 import { TeamsModule } from './teams/teams.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { UiConfigModule } from './ui-config/ui-config.module';
 import { UsersModule } from './users/users.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
-import { UiConfigModule } from './ui-config/ui-config.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { UiConfigModule } from './ui-config/ui-config.module';
     CommentsModule,
     InternalModule,
     UiConfigModule,
+    ChatsModule,
   ],
   controllers: [AppController, EmailInboxController],
   providers: [AppService, ImapService, TelegramService, AclService],

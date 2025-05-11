@@ -1,5 +1,6 @@
 'use client'
 
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import {
 	Avatar,
 	Box,
@@ -10,7 +11,6 @@ import {
 	Typography,
 } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel'
 import CustomTextField from '../../forms/theme-elements/CustomTextField'
@@ -25,19 +25,19 @@ interface UserProfile {
 
 // API запросы
 const fetchProfile = async () => {
-	const response = await axios.get('/api/users/me')
+	const response = await axiosWithAuth.get('/users/me')
 	return response.data
 }
 
 const updateProfile = async (data: Partial<UserProfile>) => {
-	const response = await axios.patch('/api/users/me', data)
+	const response = await axiosWithAuth.patch('/users/me', { name: data.name })
 	return response.data
 }
 
 const uploadAvatar = async (file: File) => {
 	const formData = new FormData()
 	formData.append('avatar', file)
-	const response = await axios.post('/api/users/me/avatar', formData, {
+	const response = await axiosWithAuth.post('/users/me/avatar', formData, {
 		headers: { 'Content-Type': 'multipart/form-data' },
 	})
 	return response.data
@@ -45,17 +45,18 @@ const uploadAvatar = async (file: File) => {
 
 const AccountTab = () => {
 	const queryClient = useQueryClient()
+	const [formData, setFormData] = useState({ name: '', email: '' })
+	const [avatarFile, setAvatarFile] = useState<File | null>(null)
+	const [error, setError] = useState<string | null>(null)
+
 	const { data: profile, isLoading } = useQuery({
 		queryKey: ['profile'],
 		queryFn: fetchProfile,
 	})
 
-	const [formData, setFormData] = useState({ name: '', email: '' })
-	const [avatarFile, setAvatarFile] = useState<File | null>(null)
-
 	useEffect(() => {
 		if (profile) {
-			setFormData({ name: profile.name, email: profile.email })
+			setFormData({ name: profile.name || '', email: profile.email || '' })
 		}
 	}, [profile])
 
@@ -63,7 +64,12 @@ const AccountTab = () => {
 		mutationFn: updateProfile,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['profile'] })
-			alert('Профиль обновлен!')
+			setError(null)
+		},
+		onError: (err: any) => {
+			setError(
+				'Не удалось обновить профиль: ' + (err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
@@ -72,7 +78,12 @@ const AccountTab = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['profile'] })
 			setAvatarFile(null)
-			alert('Аватар обновлен!')
+			setError(null)
+		},
+		onError: (err: any) => {
+			setError(
+				'Не удалось загрузить аватар: ' + (err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
@@ -98,11 +109,17 @@ const AccountTab = () => {
 	}
 
 	if (isLoading) return <Typography>Загрузка...</Typography>
+	if (!profile) return <Typography>Ошибка загрузки профиля</Typography>
 
 	return (
 		<Grid container spacing={3}>
+			{error && (
+				<Grid size={{ xs: 12 }}>
+					<Typography color='error'>{error}</Typography>
+				</Grid>
+			)}
 			{/* Change Profile */}
-			<Grid item xs={12} lg={6}>
+			<Grid size={{ xs: 12, lg: 6 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h5' mb={1}>
@@ -137,7 +154,7 @@ const AccountTab = () => {
 										variant='outlined'
 										color='error'
 										onClick={handleAvatarUpload}
-										disabled={!avatarFile}
+										disabled={!avatarFile || avatarMutation.isPending}
 									>
 										Save Avatar
 									</Button>
@@ -151,7 +168,7 @@ const AccountTab = () => {
 				</BlankCard>
 			</Grid>
 			{/* Edit Details */}
-			<Grid item xs={12} lg={6}>
+			<Grid size={{ xs: 12, lg: 6 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h5' mb={1}>
@@ -162,7 +179,7 @@ const AccountTab = () => {
 						</Typography>
 						<form onSubmit={handleSubmit}>
 							<Grid container spacing={3}>
-								<Grid item xs={12}>
+								<Grid size={{ xs: 12 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='name'>
 										Your Name
 									</CustomFormLabel>
@@ -175,7 +192,7 @@ const AccountTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12}>
+								<Grid size={{ xs: 12 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='email'>
 										Email
 									</CustomFormLabel>

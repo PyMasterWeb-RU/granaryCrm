@@ -1,86 +1,140 @@
-import { sendMsg } from '@/store/apps/chat/ChatSlice'
+'use client'
+
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import { useDispatch, useSelector } from '@/store/hooks'
+import { Message } from '@/types/chat'
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import InputBase from '@mui/material/InputBase'
-import { IconPaperclip, IconPhoto, IconSend } from '@tabler/icons-react'
-import { EmojiClickData } from 'emoji-picker-react'
-import React from 'react'
+import Typography from '@mui/material/Typography'
+import { IconPaperclip, IconSend } from '@tabler/icons-react'
+import React, { useState } from 'react'
 
 const ChatMsgSent = () => {
-	const [msg, setMsg] = React.useState<any>('')
+	const [msg, setMsg] = useState('')
+	const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+	const [error, setError] = useState<string | null>(null)
 	const dispatch = useDispatch()
-	const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
-	const [chosenEmoji, setChosenEmoji] = React.useState<string>('')
-
-	const onEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
-		setChosenEmoji(emojiData.unified)
-		setMsg(emojiData.emoji)
-	}
-
-	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-		setAnchorEl(event.currentTarget)
-	}
-	const handleClose = () => {
-		setAnchorEl(null)
-	}
-
-	const id = useSelector(state => state.chatReducer.chatContent)
+	const activeChatId = useSelector(state => state.chatReducer.chatContent)
+	const replyTo = useSelector(
+		state => state.chatReducer.replyTo
+	) as Message | null
 
 	const handleChatMsgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setMsg(e.target.value)
 	}
 
-	const newMsg = { id, msg }
+	const handleEmojiSelect = (emoji: any) => {
+		console.log('Selected emoji:', emoji)
+		setMsg(msg + emoji.native)
+		setShowEmojiPicker(false)
+	}
 
-	const onChatMsgSubmit = (e: any) => {
+	const onChatMsgSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		e.stopPropagation()
-		dispatch(sendMsg(newMsg))
-		setMsg('')
+		if (!msg.trim() || !activeChatId) return
+
+		try {
+			setError(null)
+			const res = await axiosWithAuth.post(`/chats/${activeChatId}/messages`, {
+				content: msg,
+				replyToId: replyTo?.id,
+			})
+			dispatch({ type: 'ADD_MESSAGE', payload: res.data })
+			setMsg('')
+			dispatch({ type: 'SET_REPLY_TO', payload: null })
+		} catch (err: any) {
+			setError('Не удалось отправить сообщение')
+			console.error('Ошибка отправки сообщения:', err)
+		}
+	}
+
+	const handleFileUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const file = event.target.files?.[0]
+		if (!file || !activeChatId) return
+
+		try {
+			setError(null)
+			const formData = new FormData()
+			formData.append('file', file)
+			const res = await axiosWithAuth.post('/files/upload', formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
+			})
+			await axiosWithAuth.post(`/chats/${activeChatId}/messages`, {
+				content: `Отправлен файл: ${res.data.name}`,
+				fileIds: [res.data.id],
+			})
+		} catch (err: any) {
+			setError('Не удалось загрузить файл')
+			console.error('Ошибка загрузки файла:', err)
+		}
 	}
 
 	return (
 		<Box p={2}>
-			{/* ------------------------------------------- */}
-			{/* sent chat */}
-			{/* ------------------------------------------- */}
+			{error && (
+				<Typography color='error' sx={{ mb: 1 }}>
+					{error}
+				</Typography>
+			)}
 			<form
 				onSubmit={onChatMsgSubmit}
 				style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
 			>
-				{/* ------------------------------------------- */}
-				{/* Emoji picker */}
-				{/* ------------------------------------------- */}
-
+				{replyTo && (
+					<Box
+						sx={{
+							bgcolor: 'grey.200',
+							p: 1,
+							mb: 1,
+							borderRadius: 1,
+							width: '100%',
+						}}
+					>
+						<Typography variant='caption'>
+							Отвечаете на: {replyTo.sender.name}
+						</Typography>
+						<Typography variant='body2'>{replyTo.content}</Typography>
+						<Button
+							size='small'
+							onClick={() => dispatch({ type: 'SET_REPLY_TO', payload: null })}
+						>
+							Отменить
+						</Button>
+					</Box>
+				)}
 				<InputBase
 					id='msg-sent'
 					fullWidth
 					value={msg}
-					placeholder='Type a Message'
+					placeholder='Напишите сообщение...'
 					size='small'
 					type='text'
 					inputProps={{ 'aria-label': 'Type a Message' }}
-					onChange={handleChatMsgChange.bind(null)}
+					onChange={handleChatMsgChange}
 				/>
-				<IconButton
-					aria-label='delete'
-					onClick={() => {
-						dispatch(sendMsg(newMsg))
-						setMsg('')
-					}}
-					disabled={!msg}
-					color='primary'
-				>
+				<IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+					<EmojiEmotionsIcon />
+				</IconButton>
+				<IconButton component='label'>
+					<IconPaperclip stroke={1.5} size='20' />
+					<input type='file' hidden onChange={handleFileUpload} />
+				</IconButton>
+				<IconButton type='submit' disabled={!msg.trim()}>
 					<IconSend stroke={1.5} size='20' />
 				</IconButton>
-				<IconButton aria-label='delete'>
-					<IconPhoto stroke={1.5} size='20' />
-				</IconButton>
-				<IconButton aria-label='delete'>
-					<IconPaperclip stroke={1.5} size='20' />
-				</IconButton>
 			</form>
+			{showEmojiPicker && (
+				<Box sx={{ position: 'absolute', bottom: 80, right: 20 }}>
+					<Picker data={data} onEmojiSelect={handleEmojiSelect} />
+				</Box>
+			)}
 		</Box>
 	)
 }

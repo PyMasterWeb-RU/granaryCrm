@@ -1,5 +1,6 @@
 'use client'
 
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import {
 	Avatar,
 	Box,
@@ -17,8 +18,7 @@ import {
 	IconDotsVertical,
 } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
-import React from 'react'
+import React, { useState } from 'react'
 import BlankCard from '../../shared/BlankCard'
 
 interface Device {
@@ -29,35 +29,67 @@ interface Device {
 }
 
 const fetchDevices = async () => {
-	const response = await axios.get('/api/users/me/devices')
+	const response = await axiosWithAuth.get('/users/me/devices')
+	return response.data
+}
+
+const logoutDevice = async (sessionId: string) => {
+	const response = await axiosWithAuth.post(
+		`/users/me/devices/${sessionId}/logout`
+	)
 	return response.data
 }
 
 const logoutAllDevices = async () => {
-	const response = await axios.post('/api/users/me/logout-all')
+	const response = await axiosWithAuth.post('/users/me/logout-all')
 	return response.data
 }
 
 const SecurityTab = () => {
 	const queryClient = useQueryClient()
-	const { data: devices, isLoading } = useQuery({
+	const {
+		data: devices,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ['devices'],
 		queryFn: fetchDevices,
 	})
+	const [formError, setFormError] = useState<string | null>(null)
 
-	const mutation = useMutation({
+	const logoutMutation = useMutation({
+		mutationFn: logoutDevice,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['devices'] })
+			setFormError(null)
+		},
+		onError: (err: any) => {
+			setFormError(
+				'Не удалось завершить сессию: ' + (err.message || 'Неизвестная ошибка')
+			)
+		},
+	})
+
+	const logoutAllMutation = useMutation({
 		mutationFn: logoutAllDevices,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['devices'] })
-			alert('Выход выполнен со всех устройств!')
+			setFormError(null)
+		},
+		onError: (err: any) => {
+			setFormError(
+				'Не удалось выйти со всех устройств: ' +
+					(err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
 	if (isLoading) return <Typography>Загрузка...</Typography>
+	if (error) return <Typography>Ошибка загрузки устройств</Typography>
 
 	return (
 		<Grid container spacing={3} justifyContent='center'>
-			<Grid item xs={12} lg={8}>
+			<Grid size={{ xs: 12, lg: 8 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h4' mb={2}>
@@ -79,7 +111,7 @@ const SecurityTab = () => {
 					</CardContent>
 				</BlankCard>
 			</Grid>
-			<Grid item xs={12} lg={4}>
+			<Grid size={{ xs: 12, lg: 4 }}>
 				<BlankCard>
 					<CardContent>
 						<Avatar
@@ -99,13 +131,18 @@ const SecurityTab = () => {
 						<Typography color='textSecondary' mt={1} mb={2}>
 							Manage your active devices.
 						</Typography>
+						{formError && (
+							<Typography color='error' mb={2}>
+								{formError}
+							</Typography>
+						)}
 						<Button
 							variant='contained'
 							color='primary'
-							onClick={() => mutation.mutate()}
-							disabled={mutation.isPending}
+							onClick={() => logoutAllMutation.mutate()}
+							disabled={logoutAllMutation.isPending}
 						>
-							Sign out from all devices
+							Sign out from all other devices
 						</Button>
 						{devices?.map((device: Device) => (
 							<React.Fragment key={device.id}>
@@ -129,7 +166,10 @@ const SecurityTab = () => {
 										</Typography>
 									</Box>
 									<Box sx={{ ml: 'auto !important' }}>
-										<IconButton>
+										<IconButton
+											onClick={() => logoutMutation.mutate(device.id)}
+											disabled={logoutMutation.isPending}
+										>
 											<IconDotsVertical size='22' />
 										</IconButton>
 									</Box>

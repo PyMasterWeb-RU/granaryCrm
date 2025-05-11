@@ -1,8 +1,8 @@
 'use client'
 
+import axiosWithAuth from '@/lib/axiosWithAuth'
 import { Button, CardContent, Grid, Stack, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 import React, { useState } from 'react'
 import CustomFormLabel from '../../forms/theme-elements/CustomFormLabel'
 import CustomSwitch from '../../forms/theme-elements/CustomSwitch'
@@ -18,30 +18,30 @@ interface EmailAccount {
 	imapHost?: string
 	imapPort?: number
 	imapSecure?: boolean
-	password: string
+	password?: string
 }
 
 // API запросы
 const fetchEmailAccount = async () => {
-	const response = await axios.get('/api/email-account')
+	const response = await axiosWithAuth.get('/email-accounts/me')
 	return response.data
 }
 
 const updateEmailAccount = async (data: Partial<EmailAccount>) => {
-	const response = await axios.post('/api/email-account', data)
+	const response = await axiosWithAuth.post('/email-accounts', data)
 	return response.data
 }
 
 const EmailSettingsTab = () => {
 	const queryClient = useQueryClient()
-
-	// Получение данных
-	const { data: emailAccount, isLoading } = useQuery({
+	const {
+		data: emailAccount,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ['emailAccount'],
 		queryFn: fetchEmailAccount,
 	})
-
-	// Состояние формы
 	const [formData, setFormData] = useState({
 		email: '',
 		smtpHost: '',
@@ -52,8 +52,8 @@ const EmailSettingsTab = () => {
 		imapSecure: true,
 		password: '',
 	})
+	const [formError, setFormError] = useState<string | null>(null)
 
-	// Обновление данных при загрузке
 	React.useEffect(() => {
 		if (emailAccount) {
 			setFormData({
@@ -64,20 +64,22 @@ const EmailSettingsTab = () => {
 				imapHost: emailAccount.imapHost || '',
 				imapPort: emailAccount.imapPort || 993,
 				imapSecure: emailAccount.imapSecure ?? true,
-				password: '', // Пароль не возвращаем из API
+				password: '',
 			})
 		}
 	}, [emailAccount])
 
-	// Мутация для сохранения
 	const mutation = useMutation({
 		mutationFn: updateEmailAccount,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['emailAccount'] })
-			alert('Настройки сохранены!')
+			setFormError(null)
 		},
-		onError: error => {
-			alert('Ошибка при сохранении настроек: ' + error.message)
+		onError: (err: any) => {
+			setFormError(
+				'Ошибка при сохранении настроек: ' +
+					(err.message || 'Неизвестная ошибка')
+			)
 		},
 	})
 
@@ -95,10 +97,11 @@ const EmailSettingsTab = () => {
 	}
 
 	if (isLoading) return <Typography>Загрузка...</Typography>
+	if (error) return <Typography>Ошибка загрузки настроек</Typography>
 
 	return (
 		<Grid container spacing={3}>
-			<Grid item xs={12}>
+			<Grid size={{ xs: 12 }}>
 				<BlankCard>
 					<CardContent>
 						<Typography variant='h5' mb={1}>
@@ -108,9 +111,14 @@ const EmailSettingsTab = () => {
 							Configure your SMTP and IMAP settings for sending and receiving
 							emails.
 						</Typography>
+						{formError && (
+							<Typography color='error' mb={2}>
+								{formError}
+							</Typography>
+						)}
 						<form onSubmit={handleSubmit}>
 							<Grid container spacing={3}>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='email'>
 										Email Address
 									</CustomFormLabel>
@@ -124,7 +132,7 @@ const EmailSettingsTab = () => {
 										required
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='password'>
 										Password
 									</CustomFormLabel>
@@ -140,12 +148,12 @@ const EmailSettingsTab = () => {
 									/>
 								</Grid>
 								{/* SMTP Settings */}
-								<Grid item xs={12}>
+								<Grid size={{ xs: 12 }}>
 									<Typography variant='h6' mt={2}>
 										SMTP Settings
 									</Typography>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='smtpHost'>
 										SMTP Host
 									</CustomFormLabel>
@@ -159,7 +167,7 @@ const EmailSettingsTab = () => {
 										required
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='smtpPort'>
 										SMTP Port
 									</CustomFormLabel>
@@ -174,7 +182,7 @@ const EmailSettingsTab = () => {
 										required
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='smtpSecure'>
 										Use SSL/TLS
 									</CustomFormLabel>
@@ -186,12 +194,12 @@ const EmailSettingsTab = () => {
 									/>
 								</Grid>
 								{/* IMAP Settings */}
-								<Grid item xs={12}>
+								<Grid size={{ xs: 12 }}>
 									<Typography variant='h6' mt={2}>
 										IMAP Settings
 									</Typography>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='imapHost'>
 										IMAP Host
 									</CustomFormLabel>
@@ -204,7 +212,7 @@ const EmailSettingsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='imapPort'>
 										IMAP Port
 									</CustomFormLabel>
@@ -218,7 +226,7 @@ const EmailSettingsTab = () => {
 										fullWidth
 									/>
 								</Grid>
-								<Grid item xs={12} sm={6}>
+								<Grid size={{ xs: 12, sm: 6 }}>
 									<CustomFormLabel sx={{ mt: 0 }} htmlFor='imapSecure'>
 										Use SSL/TLS
 									</CustomFormLabel>

@@ -16,6 +16,7 @@ export class FolderStorageService {
     parentId?: string,
     access: string = 'private',
   ) {
+    console.log('createFolder:', { name, userId, parentId, access });
     return this.prisma.fileFolder.create({
       data: {
         name,
@@ -92,13 +93,19 @@ export class FolderStorageService {
     accountName: string,
     userId: string,
   ) {
+    console.log('findOrCreateAccountFolder:', {
+      accountId,
+      accountName,
+      userId,
+    });
     const existing = await this.prisma.fileFolder.findFirst({
       where: { accountId },
     });
-
-    if (existing) return existing;
-
-    return this.prisma.fileFolder.create({
+    if (existing) {
+      console.log('Found existing account folder:', existing);
+      return existing;
+    }
+    const newFolder = await this.prisma.fileFolder.create({
       data: {
         name: accountName,
         userId,
@@ -106,29 +113,57 @@ export class FolderStorageService {
         accountId,
       },
     });
+    console.log('Created new account folder:', newFolder);
+    return newFolder;
   }
 
   async findOrCreateDealFolder(
     dealId: string,
     dealName: string,
     userId: string,
-    accountFolderId: string,
+    accountId?: string,
   ) {
+    console.log('findOrCreateDealFolder:', {
+      dealId,
+      dealName,
+      userId,
+      accountId,
+    });
     const existing = await this.prisma.fileFolder.findFirst({
       where: { dealId },
     });
+    if (existing) {
+      console.log('Found existing deal folder:', existing);
+      return existing;
+    }
 
-    if (existing) return existing;
+    let parentId: string | undefined;
+    if (accountId) {
+      const account = await this.prisma.account.findUnique({
+        where: { id: accountId },
+      });
+      if (!account) {
+        throw new NotFoundException(`Компания с ID ${accountId} не найдена`);
+      }
+      const accountFolder = await this.findOrCreateAccountFolder(
+        accountId,
+        account.name, // Используем реальное имя компании
+        userId,
+      );
+      parentId = accountFolder.id;
+    }
 
-    return this.prisma.fileFolder.create({
+    const newFolder = await this.prisma.fileFolder.create({
       data: {
         name: dealName,
         userId,
         access: 'private',
-        parentId: accountFolderId,
+        parentId,
         dealId,
       },
     });
+    console.log('Created new deal folder:', newFolder);
+    return newFolder;
   }
 
   async getAllUserFolders(userId: string) {

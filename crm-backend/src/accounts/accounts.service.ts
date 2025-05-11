@@ -22,7 +22,7 @@ export class AccountsService {
     address?: string;
     inn?: string;
     ogrn?: string;
-    kpp: string;
+    kpp?: string;
     ownerId: string;
     customFields?: Record<string, any>;
   }) {
@@ -67,6 +67,43 @@ export class AccountsService {
       throw new NotFoundException('Компания не найдена');
     }
     return account;
+  }
+
+  async getMyAccount(userId: string) {
+    const account = await this.prisma.account.findFirst({
+      where: { ownerId: userId },
+    });
+    if (!account) throw new NotFoundException('Компания не найдена');
+    return account;
+  }
+
+  async updateMyAccount(
+    userId: string,
+    data: Partial<{
+      name: string;
+      industry: string;
+      phone: string;
+      email: string;
+      website: string;
+      address: string;
+      inn: string;
+      ogrn: string;
+      kpp: string;
+    }>,
+  ) {
+    const account = await this.prisma.account.findFirst({
+      where: { ownerId: userId },
+    });
+    if (!account) throw new NotFoundException('Компания не найдена');
+
+    return this.prismaLogged.updateWithLog(
+      'account',
+      account.id,
+      account.ownerId,
+      data,
+      () => this.prisma.account.findUnique({ where: { id: account.id } }),
+      () => this.prisma.account.update({ where: { id: account.id }, data }),
+    );
   }
 
   async update(

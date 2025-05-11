@@ -1,70 +1,125 @@
-import axios from '../../../utils/axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { AppDispatch } from '../../store';
-import { uniqueId } from 'lodash';
-import { sub } from 'date-fns';
+import axiosWithAuth from '@/lib/axiosWithAuth'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-const API_URL = '/api/data/chat/ChatData';
-
-interface StateType {
-  chats: any[];
-  chatContent: number;
-  chatSearch: string;
+interface Chat {
+	id: string
+	type: string
+	name?: string
+	participants: { user: { id: string; name: string; avatar?: string } }[]
+	messages: {
+		id: string
+		content: string
+		createdAt: string
+		sender: { id: string; name: string; avatar?: string }
+		type?: string
+		replyTo?: { id: string; content: string; sender: { name: string } }
+	}[]
+	deal?: { id: string; title: string }
+	account?: { id: string; name: string }
 }
 
-const initialState = {
-  chats: [],
-  chatContent: 1,
-  chatSearch: '',
-};
+interface StateType {
+	chats: Chat[]
+	chatContent: string | null
+	chatSearch: string
+	replyTo: Chat['messages'][0] | null
+	loading: boolean
+	error: string | null
+}
+
+const initialState: StateType = {
+	chats: [],
+	chatContent: null,
+	chatSearch: '',
+	replyTo: null,
+	loading: false,
+	error: null,
+}
+
+// Асинхронное действие для загрузки чатов
+export const fetchChats = createAsyncThunk(
+	'chat/fetchChats',
+	async (
+		{ dealId, accountId }: { dealId?: string; accountId?: string },
+		{ rejectWithValue }
+	) => {
+		try {
+			const params = new URLSearchParams()
+			if (dealId) params.append('dealId', dealId)
+			if (accountId) params.append('accountId', accountId)
+			const response = await axiosWithAuth.get(`/chats?${params.toString()}`)
+			return response.data
+		} catch (err: any) {
+			return rejectWithValue(err.message || 'Не удалось загрузить чаты')
+		}
+	}
+)
+
+// Асинхронное действие для отправки сообщения
+export const sendMsg = createAsyncThunk(
+	'chat/sendMsg',
+	async (
+		{
+			chatId,
+			msg,
+			replyToId,
+		}: { chatId: string; msg: string; replyToId?: string },
+		{ rejectWithValue }
+	) => {
+		try {
+			const response = await axiosWithAuth.post(`/chats/${chatId}/messages`, {
+				content: msg,
+				replyToId,
+			})
+			return response.data
+		} catch (err: any) {
+			return rejectWithValue(err.message || 'Не удалось отправить сообщение')
+		}
+	}
+)
 
 export const ChatSlice = createSlice({
-  name: 'chat',
-  initialState,
-  reducers: {
-    getChats: (state, action) => {
-      state.chats = action.payload;
-    },
-    SearchChat: (state, action) => {
-      state.chatSearch = action.payload;
-    },
-    SelectChat: (state: StateType, action) => {
-      state.chatContent = action.payload;
-    },
-    sendMsg: (state: StateType, action) => {
-      const conversation = action.payload;
-      const { id, msg } = conversation;
+	name: 'chat',
+	initialState,
+	reducers: {
+		SearchChat: (state, action) => {
+			state.chatSearch = action.payload
+		},
+		SelectChat: (state, action) => {
+			state.chatContent = action.payload
+			state.replyTo = null
+		},
+		SetReplyTo: (state, action) => {
+			state.replyTo = action.payload
+		},
+	},
+	extraReducers: builder => {
+		builder
+			.addCase(fetchChats.pending, state => {
+				state.loading = true
+				state.error = null
+			})
+			.addCase(fetchChats.fulfilled, (state, action) => {
+				state.loading = false
+				state.chats = action.payload
+			})
+			.addCase(fetchChats.rejected, (state, action) => {
+				state.loading = false
+				state.error = action.payload as string
+			})
+			.addCase(sendMsg.fulfilled, (state, action) => {
+				const chat = state.chats.find(c => c.id === state.chatContent)
+				if (chat) {
+					chat.messages.push(action.payload)
+				}
+				state.replyTo = null
+			})
+			.addCase(sendMsg.rejected, (state, action) => {
+				state.error = action.payload as string
+			})
+	},
+})
 
-      const newMessage = {
-        id: id,
-        msg: msg,
-        type: 'text',
-        attachments: [],
-        createdAt: sub(new Date(), { seconds: 1 }),
-        senderId: uniqueId(),
-      };
+export const { SearchChat, SelectChat, SetReplyTo } = ChatSlice.actions
 
-      state.chats = state.chats.map((chat) =>
-        chat.id === action.payload.id
-          ? {
-              ...chat,
-              ...chat.messages.push(newMessage),
-            }
-          : chat,
-      );
-    },
-  },
-});
-
-export const { SearchChat, getChats, sendMsg, SelectChat } = ChatSlice.actions;
-
-export const fetchChats = () => async (dispatch: AppDispatch) => {
-  try {
-    const response = await axios.get(`${API_URL}`);
-    dispatch(getChats(response.data));
-  } catch (err: any) {
-    throw new Error(err);
-  }
-};
-
-export default ChatSlice.reducer;
+export default ChatSlice.reducer
