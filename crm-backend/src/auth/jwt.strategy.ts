@@ -9,25 +9,35 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // Извлечение из заголовка Authorization
         ExtractJwt.fromAuthHeaderAsBearerToken(),
+        // Извлечение из куки access_token
         (req: Request) => {
-          return req?.cookies?.access_token;
+          console.log('Extracting token from cookies:', req?.cookies);
+          return req?.cookies?.access_token || null;
         },
       ]),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
+      passReqToCallback: true, // Передаем req в validate
     });
   }
 
-  async validate(payload: { sub: string }, req: Request) {
+  async validate(req: Request, payload: { sub: string }) {
+    console.log('Validating payload:', payload);
     if (!payload || !payload.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    // Извлекаем токен из заголовка или куки
+    // Извлекаем токен из запроса
     const token =
       ExtractJwt.fromAuthHeaderAsBearerToken()(req) ||
       req.cookies?.access_token;
+
+    console.log('Extracted token:', token);
+    if (!token) {
+      throw new UnauthorizedException('No token provided');
+    }
 
     // Проверяем, существует ли сессия с данным токеном
     const session = await this.prisma.session.findUnique({

@@ -2,28 +2,27 @@ import { Providers } from '@/store/providers'
 import React from 'react'
 import MyApp from './app'
 import './global.css'
-
-import { AuthProvider } from '@/app/providers/AuthContext' // добавляем AuthProvider
+import { AuthProvider } from '@/app/providers/AuthContext'
 
 export const metadata = {
-	title: 'Modernize Main Demo',
-	description: 'Modernize Main kit',
+  title: 'Modernize Main Demo',
+  description: 'Modernize Main kit',
 }
 
 export default function RootLayout({
-	children,
+  children,
 }: {
-	children: React.ReactNode
+  children: React.ReactNode
 }) {
-	return (
-		<html lang='ru' suppressHydrationWarning>
-			<body>
-				<Providers>
-					<AuthProvider>
-						<MyApp>{children}</MyApp>
-					</AuthProvider>
-				</Providers>
-			</body>
-		</html>
-	)
+  return (
+    <html lang="ru" suppressHydrationWarning>
+      <body>
+        <Providers>
+          <AuthProvider>
+            <MyApp>{children}</MyApp>
+          </AuthProvider>
+        </Providers>
+      </body>
+    </html>
+  )
 }

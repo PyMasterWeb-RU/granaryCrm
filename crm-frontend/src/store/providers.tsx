@@ -1,14 +1,33 @@
-"use client";
-import { persistor, store } from "./store";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
+'use client'
 
-export function Providers({ children }: { children: any }) {
+import { persistor, store } from './store'
+import { Provider as ReduxProvider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState } from 'react'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  // Создаём QueryClient в клиентском контексте
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+            staleTime: 5 * 60 * 1000, // Кэш на 5 минут
+          },
+        },
+      })
+  )
+
   return (
-    <Provider store={store}>
+    <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </PersistGate>
-    </Provider>
-  );
+    </ReduxProvider>
+  )
 }

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -9,21 +11,95 @@ import {
   Button,
   IconButton,
 } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import axiosWithAuth from '@/lib/axiosWithAuth';
 import * as dropdownData from './data';
-
 import { IconMail } from '@tabler/icons-react';
 import { Stack } from '@mui/system';
 import Image from 'next/image';
 
+// Тип для данных профиля
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: {
+    id: string;
+    name: string;
+  };
+}
+
+// Запрос профиля
+const fetchProfile = async (): Promise<UserProfile> => {
+  const response = await axiosWithAuth.get('/users/me');
+  console.log('Fetched profile for Profile.tsx:', response.data);
+  return response.data;
+};
 
 const Profile = () => {
-  const [anchorEl2, setAnchorEl2] = useState(null);
-  const handleClick2 = (event: any) => {
+  const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
+
+  // Запрос данных профиля
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile'],
+    queryFn: fetchProfile,
+  });
+
+  const handleClick2 = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl2(event.currentTarget);
   };
+
   const handleClose2 = () => {
     setAnchorEl2(null);
   };
+
+  // Если данные загружаются, показываем заглушку
+  if (isLoading) {
+    return (
+      <Box>
+        <IconButton>
+          <Avatar
+            src="/images/profile/user-1.jpg"
+            alt="ProfileImg"
+            sx={{ width: 35, height: 35 }}
+          />
+        </IconButton>
+      </Box>
+    );
+  }
+
+  // Если ошибка, показываем заглушку и логируем
+  if (error) {
+    console.error('Error fetching profile:', error);
+    return (
+      <Box>
+        <IconButton>
+          <Avatar
+            src="/images/profile/user-1.jpg"
+            alt="ProfileImg"
+            sx={{ width: 35, height: 35 }}
+          />
+        </IconButton>
+      </Box>
+    );
+  }
+
+  // Если profile не определён, показываем заглушку
+  if (!profile) {
+    console.error('Profile is undefined');
+    return (
+      <Box>
+        <IconButton>
+          <Avatar
+            src="/images/profile/user-1.jpg"
+            alt="ProfileImg"
+            sx={{ width: 35, height: 35 }}
+          />
+        </IconButton>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -40,12 +116,17 @@ const Profile = () => {
         onClick={handleClick2}
       >
         <Avatar
-          src={"/images/profile/user-1.jpg"}
-          alt={'ProfileImg'}
+          src={
+            profile.avatar
+              ? `http://localhost:4200${profile.avatar}?v=${Date.now()}`
+              : '/images/profile/user-1.jpg'
+          }
+          alt={profile.name}
           sx={{
             width: 35,
             height: 35,
           }}
+          onError={() => console.error('Failed to load avatar:', profile.avatar)}
         />
       </IconButton>
       {/* ------------------------------------------- */}
@@ -68,13 +149,22 @@ const Profile = () => {
       >
         <Typography variant="h5">User Profile</Typography>
         <Stack direction="row" py={3} spacing={2} alignItems="center">
-        <Avatar src={"/images/profile/user-1.jpg"} alt={"ProfileImg"} sx={{ width: 95, height: 95 }} />
+          <Avatar
+            src={
+              profile.avatar
+                ? `http://localhost:4200${profile.avatar}?v=${Date.now()}`
+                : '/images/profile/user-1.jpg'
+            }
+            alt={profile.name}
+            sx={{ width: 95, height: 95 }}
+            onError={() => console.error('Failed to load avatar:', profile.avatar)}
+          />
           <Box>
             <Typography variant="subtitle2" color="textPrimary" fontWeight={600}>
-              Mathew Anderson
+              {profile.name}
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
-              Designer
+              {profile.role.name}
             </Typography>
             <Typography
               variant="subtitle2"
@@ -84,15 +174,15 @@ const Profile = () => {
               gap={1}
             >
               <IconMail width={15} height={15} />
-              info@modernize.com
+              {profile.email}
             </Typography>
           </Box>
         </Stack>
         <Divider />
-        {dropdownData.profile.map((profile) => (
-          <Box key={profile.title}>
+        {dropdownData.profile.map((profileItem) => (
+          <Box key={profileItem.title}>
             <Box sx={{ py: 2, px: 0 }} className="hover-text-primary">
-              <Link href={profile.href}>
+              <Link href={profileItem.href}>
                 <Stack direction="row" spacing={2}>
                   <Box
                     width="45px"
@@ -100,11 +190,12 @@ const Profile = () => {
                     bgcolor="primary.light"
                     display="flex"
                     alignItems="center"
-                    justifyContent="center" flexShrink="0"
+                    justifyContent="center"
+                    flexShrink="0"
                   >
                     <Avatar
-                      src={profile.icon}
-                      alt={profile.icon}
+                      src={profileItem.icon}
+                      alt={profileItem.icon}
                       sx={{
                         width: 24,
                         height: 24,
@@ -123,7 +214,7 @@ const Profile = () => {
                         width: '240px',
                       }}
                     >
-                      {profile.title}
+                      {profileItem.title}
                     </Typography>
                     <Typography
                       color="textSecondary"
@@ -133,7 +224,7 @@ const Profile = () => {
                       }}
                       noWrap
                     >
-                      {profile.subtitle}
+                      {profileItem.subtitle}
                     </Typography>
                   </Box>
                 </Stack>
@@ -153,7 +244,14 @@ const Profile = () => {
                   Upgrade
                 </Button>
               </Box>
-              <Image src={"/images/backgrounds/unlimited-bg.png"} width={150} height={183} style={{ height: 'auto', width: 'auto' }} alt="unlimited" className="signup-bg" />
+              <Image
+                src="/images/backgrounds/unlimited-bg.png"
+                width={150}
+                height={183}
+                style={{ height: 'auto', width: 'auto' }}
+                alt="unlimited"
+                className="signup-bg"
+              />
             </Box>
           </Box>
           <Button href="/auth/auth1/login" variant="outlined" color="primary" component={Link} fullWidth>
